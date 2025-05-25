@@ -1,0 +1,82 @@
+{
+  "_comment": "Choose one configuration based on your hosting mode and setup preference",
+
+  "_shell_script_mode": {
+    "_comment": "Recommended approach using a shell script for easier setup and path management",
+    "token-metrics": {
+      "command": "/path/to/start-tm-mcp-server.sh",
+      "args": []
+    }
+  },
+
+  "_direct_node_mode_self_hosted": {
+    "token-metrics": {
+      "command": "node",
+      "args": ["build/src/index.js"],
+      "cwd": ".",
+      "env": {
+        "TOKEN_METRICS_API_KEY": "your-api-key-here"
+      }
+    }
+  },
+
+  "_direct_node_mode_centralized_hosting": {
+    "token-metrics": {
+      "command": "node",
+      "args": ["build/src/index.js"],
+      "cwd": ".",
+      "env": {}
+    }
+  },
+
+  "_usage_examples": {
+    "_comment": "Example tool usage patterns",
+    "_self_hosted_queries": [
+      "Get token data for BTC",
+      "Find tokens in defi category",
+      "Search for tokens on binance exchange",
+      "Get Bitcoin and Ethereum data with limit 5",
+      "Find tokens by blockchain address",
+      "Get current price for token ID 1",
+      "Fetch prices for token IDs 1, 2, and 3",
+      "What's the price of Bitcoin (token ID 1)?"
+    ],
+    "_centralized_queries": [
+      "Get BTC data with API key: your-key",
+      "Search yield farming tokens with API key: your-key",
+      "Get price for token ID 1 with API key: your-key",
+      "Fetch prices for tokens 1,2,3 with API key: your-key"
+    ],
+    "_available_tools": {
+      "get_token_data": {
+        "description": "Fetch comprehensive token information",
+        "parameters": {
+          "token_id": "Comma-separated token IDs (e.g., '1,2,3')",
+          "token_name": "Comma-separated names (e.g., 'Bitcoin,Ethereum')",
+          "symbol": "Comma-separated symbols (e.g., 'BTC,ETH,ADA')",
+          "category": "Comma-separated categories (e.g., 'defi,yield farming')",
+          "exchange": "Comma-separated exchanges (e.g., 'binance,gate')",
+          "blockchain_address": "Blockchain:address format",
+          "limit": "Number of results (max: 100)",
+          "page": "Page number for pagination",
+          "api_key": "Required for centralized hosting"
+        }
+      },
+      "get_token_price": {
+        "description": "Fetch current token price data",
+        "parameters": {
+          "token_id": "Comma-separated token IDs (e.g., '1,2,3') - REQUIRED",
+          "api_key": "Required for centralized hosting"
+        }
+      }
+    }
+  },
+
+  "mcpServers": {
+    "_comment": "Current recommended configuration using shell script",
+    "token-metrics": {
+      "command": "/tmp/start-token-metrics-server.sh",
+      "args": []
+    }
+  }
+}

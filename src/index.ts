@@ -1,1 +1,82 @@
-console.log("Hello World");
+import { Server } from "@modelcontextprotocol/sdk/server/index.js";
+import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import {
+  CallToolRequestSchema,
+  ListToolsRequestSchema,
+  CallToolRequest,
+} from "@modelcontextprotocol/sdk/types.js";
+import { AVAILABLE_TOOLS } from "./tools/index.js";
+
+class TokenMetricsMCPServer {
+  private server: Server;
+
+  constructor() {
+    this.server = new Server(
+      {
+        name: "Token Metrics MCP Server",
+        version: "1.0.0",
+      },
+      {
+        capabilities: {
+          tools: {},
+        },
+      },
+    );
+
+    this.setupToolHandlers();
+  }
+
+  private setupToolHandlers(): void {
+    this.server.setRequestHandler(ListToolsRequestSchema, async () => {
+      return {
+        tools: AVAILABLE_TOOLS.map((tool) => tool.getToolDefinition()),
+      };
+    });
+
+    this.server.setRequestHandler(
+      CallToolRequestSchema,
+      async (request: CallToolRequest) => {
+        const { name, arguments: args } = request.params;
+
+        const tool = AVAILABLE_TOOLS.find(
+          (t) => t.getToolDefinition().name === name,
+        );
+
+        if (!tool) {
+          throw new Error(`Unknown tool: ${name}`);
+        }
+
+        return await tool.execute(args);
+      },
+    );
+  }
+
+  async start(): Promise<void> {
+    const transport = new StdioServerTransport();
+    await this.server.connect(transport);
+    console.log("Token Metrics MCP Server running on stdio");
+  }
+}
+
+async function main(): Promise<void> {
+  const server = new TokenMetricsMCPServer();
+  await server.start();
+}
+
+process.on("SIGINT", () => {
+  console.error("Received SIGINT, shutting down gracefully");
+  process.exit(0);
+});
+
+process.on("SIGTERM", () => {
+  console.error("Received SIGTERM, shutting down gracefully");
+  process.exit(0);
+});
+
+main().catch((error: unknown) => {
+  console.error(
+    "Failed to start server:",
+    error instanceof Error ? error.message : String(error),
+  );
+  process.exit(1);
+});
