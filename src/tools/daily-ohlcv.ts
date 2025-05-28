@@ -6,29 +6,31 @@ interface TokenMetricsResponse extends TokenMetricsBaseResponse {
     TOKEN_ID: number;
     TOKEN_NAME: string;
     TOKEN_SYMBOL: string;
-    EXCHANGE_LIST: any[];
-    CATEGORY_LIST: any[];
-    TM_LINK: string;
+    TIMESTAMP: string;
+    OPEN: number;
+    HIGH: number;
+    LOW: number;
+    CLOSE: number;
+    VOLUME: number;
   }>;
 }
-interface TokenDataInput {
+interface DailyOHLCVInput {
   token_id?: string;
-  token_name?: string;
   symbol?: string;
-  category?: string;
-  exchange?: string;
-  blockchain_address?: string;
+  token_name?: string;
+  startDate?: string;
+  endDate?: string;
   limit?: number;
   page?: number;
   api_key?: string;
 }
 
-export class TokenDataTool extends BaseApiTool {
+export class DailyOHLCVTool extends BaseApiTool {
   getToolDefinition(): Tool {
     return {
-      name: "get_tokens_data",
+      name: "get_tokens_daily_ohlcv",
       description:
-        "Fetch token(s) data from Token Metrics API. Provide either token_id or symbol (or both) along with optional date range.",
+        "Fetch daily OHLCV (Open, High, Low, Close, Volume) data for token(s) for a specific date or date range from Token Metrics API.",
       inputSchema: {
         type: "object",
         properties: {
@@ -41,24 +43,20 @@ export class TokenDataTool extends BaseApiTool {
             description:
               "Comma Separated Crypto Asset Names (e.g., Bitcoin, Ethereum)",
           },
+          startDate: {
+            type: "string",
+            description:
+              "Start Date accepts date as a string - YYYY-MM-DD format. Example: 2023-10-01",
+          },
+          endDate: {
+            type: "string",
+            description:
+              "End Date accepts date as a string - YYYY-MM-DD format. Example: 2023-10-10",
+          },
           symbol: {
             type: "string",
             description:
               "Comma-separated string of token symbols (e.g., 'BTC,ETH,ADA')",
-          },
-          category: {
-            type: "string",
-            description:
-              "Comma Separated category name. Example: yield farming,defi",
-          },
-          exchange: {
-            type: "string",
-            description: "Comma Separated exchange name. Example: binance,gate",
-          },
-          blockchain_address: {
-            type: "string",
-            description:
-              "Use this parameter to search tokens through specific blockchains and contract addresses. Input the blockchain name followed by a colon and then the contract address. Example: binance-smart-chain:0x57185189118c7e786cafd5c71f35b16012fa95ad",
           },
           limit: {
             type: "number",
@@ -82,13 +80,13 @@ export class TokenDataTool extends BaseApiTool {
   }
 
   protected async performApiRequest(
-    input: TokenDataInput,
+    input: DailyOHLCVInput,
   ): Promise<TokenMetricsResponse> {
     const activeApiKey = this.validateApiKey(input.api_key);
     const params = this.buildParams(input);
 
     return (await this.makeApiRequest(
-      "/tokens",
+      "/daily-ohlcv",
       params,
       activeApiKey,
     )) as TokenMetricsResponse;

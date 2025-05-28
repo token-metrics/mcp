@@ -6,29 +6,38 @@ interface TokenMetricsResponse extends TokenMetricsBaseResponse {
     TOKEN_ID: number;
     TOKEN_NAME: string;
     TOKEN_SYMBOL: string;
-    EXCHANGE_LIST: any[];
-    CATEGORY_LIST: any[];
+    DATE: string;
+    TRADING_SIGNAL: number;
+    TOKEN_TREND: number;
+    TRADING_SIGNALS_RETURNS: number;
+    HOLDING_RETURNS: number;
+    TM_TRADER_GRADE: number;
+    TM_INVESTOR_GRADE: number;
     TM_LINK: string;
   }>;
 }
-interface TokenDataInput {
+interface TokenTradingSignalInput {
   token_id?: string;
-  token_name?: string;
+  startDate?: string;
+  endDate?: string;
   symbol?: string;
   category?: string;
   exchange?: string;
-  blockchain_address?: string;
+  marketcap?: string;
+  fdv?: string;
+  volume?: string;
+  signal?: string;
   limit?: number;
   page?: number;
   api_key?: string;
 }
 
-export class TokenDataTool extends BaseApiTool {
+export class TokenTradingSignalTool extends BaseApiTool {
   getToolDefinition(): Tool {
     return {
-      name: "get_tokens_data",
+      name: "get_tokens_trading_signal",
       description:
-        "Fetch token(s) data from Token Metrics API. Provide either token_id or symbol (or both) along with optional date range.",
+        "Fetch token(s) AI generated trading signals for long and short positions for a specific date or date range from Token Metrics API.",
       inputSchema: {
         type: "object",
         properties: {
@@ -36,10 +45,15 @@ export class TokenDataTool extends BaseApiTool {
             type: "string",
             description: "Comma-separated string of token IDs (e.g., '1,2,3')",
           },
-          token_name: {
+          startDate: {
             type: "string",
             description:
-              "Comma Separated Crypto Asset Names (e.g., Bitcoin, Ethereum)",
+              "Start Date accepts date as a string - YYYY-MM-DD format. Example: 2023-10-01",
+          },
+          endDate: {
+            type: "string",
+            description:
+              "End Date accepts date as a string - YYYY-MM-DD format. Example: 2023-10-10",
           },
           symbol: {
             type: "string",
@@ -55,10 +69,25 @@ export class TokenDataTool extends BaseApiTool {
             type: "string",
             description: "Comma Separated exchange name. Example: binance,gate",
           },
-          blockchain_address: {
+          marketcap: {
             type: "string",
             description:
-              "Use this parameter to search tokens through specific blockchains and contract addresses. Input the blockchain name followed by a colon and then the contract address. Example: binance-smart-chain:0x57185189118c7e786cafd5c71f35b16012fa95ad",
+              "Minimum MarketCap in $ (USD) of the token. Example: 100",
+          },
+          fdv: {
+            type: "string",
+            description:
+              "Minimum fully diluted valuation in $ (USD) of the token. Example: 100",
+          },
+          volume: {
+            type: "string",
+            description:
+              "Minimum 24h trading volume in $ (USD) of the token. Example: 100",
+          },
+          signal: {
+            type: "string",
+            description:
+              "The current signal value of the strategy of the token, between bullish (1), bearish (-1) or no signal (0). Example: 1",
           },
           limit: {
             type: "number",
@@ -82,13 +111,13 @@ export class TokenDataTool extends BaseApiTool {
   }
 
   protected async performApiRequest(
-    input: TokenDataInput,
+    input: TokenTradingSignalInput,
   ): Promise<TokenMetricsResponse> {
     const activeApiKey = this.validateApiKey(input.api_key);
     const params = this.buildParams(input);
 
     return (await this.makeApiRequest(
-      "/tokens",
+      "/trading-signals",
       params,
       activeApiKey,
     )) as TokenMetricsResponse;

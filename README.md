@@ -6,7 +6,22 @@ A Model Context Protocol (MCP) server that provides access to Token Metrics API 
 
 - **Token Data Retrieval**: Fetch comprehensive token information including names, symbols, IDs, and Token Metrics URLs
 - **Token Price Data**: Get current price information for tokens by their IDs
+- **Trader Grade Analysis**: Access short-term trader grades with 24h percent changes for informed trading decisions
+- **Investor Grade Analysis**: Retrieve long-term investment grades including Technology and Fundamental metrics
+- **OHLCV Data**: Access both hourly and daily Open, High, Low, Close, Volume data for technical analysis
+- **Market Metrics**: Get overall crypto market metrics and signals for market-wide insights
+- **Trading Signals**: Fetch trading signals and performance metrics to guide trading strategies
+- **AI-Generated Reports**: Access comprehensive AI-generated reports including investment analyses, deep dives, and code reviews
+- **Crypto Investor Data**: Retrieve crypto investor-related data and metrics
+- **Top Tokens Rankings**: Get lists of top cryptocurrencies by market capitalization
+- **Resistance & Support Levels**: Access technical analysis data for resistance and support levels
+- **Market Sentiment Analysis**: Fetch sentiment data from various sources including news, Reddit, and Twitter
+- **Quantitative Metrics**: Access advanced risk and performance metrics including Sharpe ratio, volatility, and more
+- **Scenario Analysis**: Get price predictions based on different crypto market scenarios
+- **Correlation Analysis**: Analyze token correlations with top 10 and bottom 10 correlated tokens
 - **Flexible Querying**: Query by token ID, token name, symbol, category, exchange, or blockchain address
+- **Date Range Support**: Filter data by specific date ranges for historical analysis
+- **Advanced Filtering**: Filter by market cap, volume, grades, and other financial metrics
 - **Pagination Support**: Control result pagination with limit and page parameters
 - **Multiple Hosting Modes**: Self-hosted with environment variables OR centralized hosting with API key parameters
 - **Error Handling**: Comprehensive error handling with detailed error messages
@@ -177,9 +192,9 @@ npm run start:dev
 
 ### Available MCP Tools
 
-The server exposes two tools for accessing Token Metrics API data:
+The server exposes 17 comprehensive tools for accessing Token Metrics API data:
 
-#### 1. `get_token_data` - Token Information
+#### 1. `get_tokens_data` - Token Information
 
 Fetches comprehensive token data including names, symbols, IDs, and Token Metrics URLs.
 
@@ -197,7 +212,212 @@ All parameters are optional, but you must provide at least one search criteria:
 - **`page`** (optional): Page number for pagination (default: 1)
 - **`api_key`** (optional): Your Token Metrics API key (required for centralized hosting mode)
 
-##### Example Usage
+#### 2. `get_tokens_price` - Token Price Information
+
+Fetches current price data for tokens by their IDs.
+
+##### Parameters
+
+- **`token_id`** (required): Comma-separated string of token IDs (e.g., "1,2,3")
+- **`api_key`** (optional): Your Token Metrics API key (required for centralized hosting mode)
+
+#### 3. `get_tokens_trader_grade` - Token Trader Grade
+
+Fetches token trader grades including 24h percent change for trader grades for specific dates or date ranges.
+
+##### Parameters
+
+- **`token_id`** (optional): Comma-separated string of token IDs (e.g., "1,2,3")
+- **`symbol`** (optional): Comma-separated string of token symbols (e.g., "BTC,ETH,ADA")
+- **`startDate`** (optional): Start date in YYYY-MM-DD format (e.g., "2023-10-01")
+- **`endDate`** (optional): End date in YYYY-MM-DD format (e.g., "2023-10-10")
+- **`category`** (optional): Comma-separated category names (e.g., "yield farming,defi")
+- **`exchange`** (optional): Comma-separated exchange names (e.g., "binance,gate")
+- **`marketcap`** (optional): Minimum market cap in USD (e.g., "100")
+- **`fdv`** (optional): Minimum fully diluted valuation in USD (e.g., "100")
+- **`volume`** (optional): Minimum 24h trading volume in USD (e.g., "100")
+- **`traderGrade`** (optional): Minimum TM Trader Grade (e.g., "17")
+- **`traderGradePercentChange`** (optional): Minimum 24h percent change in TM Trader Grade (e.g., "0.14")
+- **`limit`** (optional): Limit results (default: 50, max: 100)
+- **`page`** (optional): Page number for pagination
+- **`api_key`** (optional): Your Token Metrics API key (required for centralized hosting mode)
+
+#### 4. `get_tokens_investor_grade` - Token Investor Grade
+
+Fetches token long-term grades including Technology and Fundamental metrics for specific dates or date ranges.
+
+##### Parameters
+
+- **`token_id`** (optional): Comma-separated string of token IDs (e.g., "1,2,3")
+- **`symbol`** (optional): Comma-separated string of token symbols (e.g., "BTC,ETH,ADA")
+- **`startDate`** (optional): Start date in YYYY-MM-DD format (e.g., "2023-10-01")
+- **`endDate`** (optional): End date in YYYY-MM-DD format (e.g., "2023-10-10")
+- **`category`** (optional): Comma-separated category names (e.g., "yield farming,defi")
+- **`exchange`** (optional): Comma-separated exchange names (e.g., "binance,gate")
+- **`marketcap`** (optional): Minimum market cap in USD (e.g., "100")
+- **`fdv`** (optional): Minimum fully diluted valuation in USD (e.g., "100")
+- **`volume`** (optional): Minimum 24h trading volume in USD (e.g., "100")
+- **`investorGrade`** (optional): Minimum TM Investor Grade (e.g., "17")
+- **`limit`** (optional): Limit results (default: 50, max: 100)
+- **`page`** (optional): Page number for pagination
+- **`api_key`** (optional): Your Token Metrics API key (required for centralized hosting mode)
+
+#### 5. `get_tokens_hourly_ohlcv` - Hourly OHLCV Data
+
+Fetches hourly OHLCV (Open, High, Low, Close, Volume) data for tokens.
+
+##### Parameters
+
+- **`token_id`** (optional): Comma-separated string of token IDs (e.g., "1,2,3")
+- **`symbol`** (optional): Comma-separated string of token symbols (e.g., "BTC,ETH,ADA")
+- **`token_name`** (optional): Comma-separated crypto asset names (e.g., "Bitcoin,Ethereum")
+- **`startDate`** (optional): Start date in YYYY-MM-DD format (e.g., "2023-10-01")
+- **`endDate`** (optional): End date in YYYY-MM-DD format (e.g., "2023-10-10")
+- **`limit`** (optional): Limit results (default: 50, max: 100)
+- **`page`** (optional): Page number for pagination
+- **`api_key`** (optional): Your Token Metrics API key (required for centralized hosting mode)
+
+#### 6. `get_tokens_daily_ohlcv` - Daily OHLCV Data
+
+Fetches daily OHLCV (Open, High, Low, Close, Volume) data for tokens.
+
+##### Parameters
+
+- **`token_id`** (optional): Comma-separated string of token IDs (e.g., "1,2,3")
+- **`symbol`** (optional): Comma-separated string of token symbols (e.g., "BTC,ETH,ADA")
+- **`token_name`** (optional): Comma-separated crypto asset names (e.g., "Bitcoin,Ethereum")
+- **`startDate`** (optional): Start date in YYYY-MM-DD format (e.g., "2023-10-01")
+- **`endDate`** (optional): End date in YYYY-MM-DD format (e.g., "2023-10-10")
+- **`limit`** (optional): Limit results (default: 50, max: 100)
+- **`page`** (optional): Page number for pagination
+- **`api_key`** (optional): Your Token Metrics API key (required for centralized hosting mode)
+
+#### 7. `get_market_metrics` - Market Metrics
+
+Fetches overall crypto market metrics and signals.
+
+##### Parameters
+
+- **`startDate`** (optional): Start date in YYYY-MM-DD format (e.g., "2023-10-01")
+- **`endDate`** (optional): End date in YYYY-MM-DD format (e.g., "2023-10-10")
+- **`limit`** (optional): Limit results (default: 50, max: 100)
+- **`page`** (optional): Page number for pagination
+- **`api_key`** (optional): Your Token Metrics API key (required for centralized hosting mode)
+
+#### 8. `get_tokens_trading_signal` - Trading Signals
+
+Fetches trading signals and performance metrics for tokens.
+
+##### Parameters
+
+- **`token_id`** (optional): Comma-separated string of token IDs (e.g., "1,2,3")
+- **`symbol`** (optional): Comma-separated string of token symbols (e.g., "BTC,ETH,ADA")
+- **`startDate`** (optional): Start date in YYYY-MM-DD format (e.g., "2023-10-01")
+- **`endDate`** (optional): End date in YYYY-MM-DD format (e.g., "2023-10-10")
+- **`category`** (optional): Comma-separated category names (e.g., "yield farming,defi")
+- **`exchange`** (optional): Comma-separated exchange names (e.g., "binance,gate")
+- **`limit`** (optional): Limit results (default: 50, max: 100)
+- **`page`** (optional): Page number for pagination
+- **`api_key`** (optional): Your Token Metrics API key (required for centralized hosting mode)
+
+#### 9. `get_tokens_ai_report` - AI-Generated Reports
+
+Fetches comprehensive AI-generated reports including investment analyses, deep dives, and code reviews.
+
+##### Parameters
+
+- **`token_id`** (optional): Comma-separated string of token IDs (e.g., "1,2,3")
+- **`symbol`** (optional): Comma-separated string of token symbols (e.g., "BTC,ETH,ADA")
+- **`limit`** (optional): Limit results (default: 50, max: 100)
+- **`page`** (optional): Page number for pagination
+- **`api_key`** (optional): Your Token Metrics API key (required for centralized hosting mode)
+
+#### 10. `get_crypto_investor_data` - Crypto Investor Data
+
+Fetches crypto investor-related data and metrics.
+
+##### Parameters
+
+- **`limit`** (optional): Limit results (default: 50, max: 100)
+- **`page`** (optional): Page number for pagination
+- **`api_key`** (optional): Your Token Metrics API key (required for centralized hosting mode)
+
+#### 11. `get_top_tokens_by_market_cap` - Top Tokens by Market Cap
+
+Fetches the list of top cryptocurrencies by market capitalization.
+
+##### Parameters
+
+- **`top_k`** (optional): Number of top cryptocurrencies to retrieve (default: 50, max: 100)
+- **`page`** (optional): Page number for pagination
+- **`api_key`** (optional): Your Token Metrics API key (required for centralized hosting mode)
+
+#### 12. `get_tokens_resistance_support` - Resistance and Support Levels
+
+Fetches resistance and support level data for tokens.
+
+##### Parameters
+
+- **`token_id`** (optional): Comma-separated string of token IDs (e.g., "1,2,3")
+- **`symbol`** (optional): Comma-separated string of token symbols (e.g., "BTC,ETH,ADA")
+- **`limit`** (optional): Limit results (default: 50, max: 100)
+- **`page`** (optional): Page number for pagination
+- **`api_key`** (optional): Your Token Metrics API key (required for centralized hosting mode)
+
+#### 13. `get_sentiment_data` - Market Sentiment Data
+
+Fetches market sentiment data from various sources including news, Reddit, and Twitter.
+
+##### Parameters
+
+- **`startDate`** (optional): Start date in YYYY-MM-DD format (e.g., "2023-10-01")
+- **`endDate`** (optional): End date in YYYY-MM-DD format (e.g., "2023-10-10")
+- **`limit`** (optional): Limit results (default: 50, max: 100)
+- **`page`** (optional): Page number for pagination
+- **`api_key`** (optional): Your Token Metrics API key (required for centralized hosting mode)
+
+#### 14. `get_tokens_quant_metrics` - Quantitative Metrics
+
+Fetches quantitative risk and performance metrics for tokens.
+
+##### Parameters
+
+- **`token_id`** (optional): Comma-separated string of token IDs (e.g., "1,2,3")
+- **`symbol`** (optional): Comma-separated string of token symbols (e.g., "BTC,ETH,ADA")
+- **`startDate`** (optional): Start date in YYYY-MM-DD format (e.g., "2023-10-01")
+- **`endDate`** (optional): End date in YYYY-MM-DD format (e.g., "2023-10-10")
+- **`limit`** (optional): Limit results (default: 50, max: 100)
+- **`page`** (optional): Page number for pagination
+- **`api_key`** (optional): Your Token Metrics API key (required for centralized hosting mode)
+
+#### 15. `get_tokens_scenario_analysis` - Scenario Analysis
+
+Fetches price predictions based on different crypto market scenarios.
+
+##### Parameters
+
+- **`token_id`** (optional): Comma-separated string of token IDs (e.g., "1,2,3")
+- **`symbol`** (optional): Comma-separated string of token symbols (e.g., "BTC,ETH,ADA")
+- **`limit`** (optional): Limit results (default: 50, max: 100)
+- **`page`** (optional): Page number for pagination
+- **`api_key`** (optional): Your Token Metrics API key (required for centralized hosting mode)
+
+#### 16. `get_tokens_correlation` - Token Correlation Analysis
+
+Fetches top 10 and bottom 10 correlated tokens from the top 100 market cap tokens.
+
+##### Parameters
+
+- **`token_id`** (optional): Comma-separated string of token IDs (e.g., "1,2,3")
+- **`symbol`** (optional): Comma-separated string of token symbols (e.g., "BTC,ETH,ADA")
+- **`token_name`** (optional): Comma-separated crypto asset names (e.g., "Bitcoin,Ethereum")
+- **`category`** (optional): Comma-separated category names (e.g., "yield farming,defi")
+- **`exchange`** (optional): Comma-separated exchange names (e.g., "binance,gate")
+- **`limit`** (optional): Limit results (default: 50, max: 100)
+- **`page`** (optional): Page number for pagination
+- **`api_key`** (optional): Your Token Metrics API key (required for centralized hosting mode)
+
+### Example Usage
 
 **Self-Hosted Mode (with environment variable):**
 
@@ -239,7 +459,9 @@ All parameters are optional, but you must provide at least one search criteria:
 }
 ```
 
-##### Response Format
+### Response Format
+
+All tools return data in a consistent format:
 
 ```json
 {
@@ -248,69 +470,7 @@ All parameters are optional, but you must provide at least one search criteria:
   "length": 1,
   "data": [
     {
-      "TOKEN_ID": 1,
-      "TOKEN_NAME": "Bitcoin",
-      "TOKEN_SYMBOL": "BTC",
-      "TM_LINK": "https://app.tokenmetrics.com/bitcoin"
-    }
-  ]
-}
-```
-
-#### 2. `get_token_price` - Token Price Information
-
-Fetches current price data for tokens by their IDs.
-
-##### Parameters
-
-- **`token_id`** (required): Comma-separated string of token IDs (e.g., "1,2,3")
-- **`api_key`** (optional): Your Token Metrics API key (required for centralized hosting mode)
-
-##### Example Usage
-
-**Self-Hosted Mode (with environment variable):**
-
-```json
-{
-  "token_id": "1"
-}
-```
-
-```json
-{
-  "token_id": "1,2,3"
-}
-```
-
-**Centralized Hosting Mode (with API key parameter):**
-
-```json
-{
-  "token_id": "1",
-  "api_key": "your-api-key-here"
-}
-```
-
-```json
-{
-  "token_id": "1,2,3",
-  "api_key": "your-api-key-here"
-}
-```
-
-##### Response Format
-
-```json
-{
-  "success": true,
-  "message": "Success message",
-  "length": 1,
-  "data": [
-    {
-      "TOKEN_ID": 1,
-      "TOKEN_NAME": "Bitcoin",
-      "TOKEN_SYMBOL": "BTC",
-      "CURRENT_PRICE": 45000.5
+      // Tool-specific data structure
     }
   ]
 }
@@ -324,6 +484,20 @@ The server connects to the Token Metrics API at:
 - **Endpoints**:
   - `/tokens` (for token data)
   - `/price` (for price data)
+  - `/trader-grades` (for trader grade data)
+  - `/investor-grades` (for investor grade data)
+  - `/hourly-ohlcv` (for hourly OHLCV data)
+  - `/daily-ohlcv` (for daily OHLCV data)
+  - `/market-metrics` (for market metrics)
+  - `/trading-signals` (for trading signals)
+  - `/ai-reports` (for AI-generated reports)
+  - `/crypto-investor` (for crypto investor data)
+  - `/top-market-cap-tokens` (for top tokens by market cap)
+  - `/resistance-support` (for resistance and support levels)
+  - `/sentiment` (for sentiment data)
+  - `/quant-metrics` (for quantitative metrics)
+  - `/scenario-analysis` (for scenario analysis)
+  - `/correlation` (for correlation analysis)
 
 ## Development
 
@@ -337,7 +511,21 @@ src/
 │   ├── types.ts         # Base tool interfaces and types
 │   ├── base-api-tool.ts # Shared API functionality base class
 │   ├── token-data.ts    # Token data tool implementation
-│   └── price.ts         # Token price tool implementation
+│   ├── price.ts         # Token price tool implementation
+│   ├── trader-grade.ts  # Token trader grade tool implementation
+│   ├── investor-grade.ts # Token investor grade tool implementation
+│   ├── hourly-ohlcv.ts  # Hourly OHLCV data tool implementation
+│   ├── daily-ohlcv.ts   # Daily OHLCV data tool implementation
+│   ├── market-metrics.ts # Market metrics tool implementation
+│   ├── trading-signal.ts # Trading signals tool implementation
+│   ├── ai-report.ts     # AI-generated reports tool implementation
+│   ├── crypto-investor.ts # Crypto investor data tool implementation
+│   ├── top-tokens.ts    # Top tokens by market cap tool implementation
+│   ├── resistance-support.ts # Resistance and support levels tool implementation
+│   ├── sentiment.ts     # Market sentiment data tool implementation
+│   ├── quant-metrics.ts # Quantitative metrics tool implementation
+│   ├── scenario-analysis.ts # Scenario analysis tool implementation
+│   └── correlation.ts   # Token correlation analysis tool implementation
 package.json              # Dependencies and scripts
 tsconfig.json            # TypeScript configuration
 README.md                # This file

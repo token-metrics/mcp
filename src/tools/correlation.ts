@@ -6,29 +6,27 @@ interface TokenMetricsResponse extends TokenMetricsBaseResponse {
     TOKEN_ID: number;
     TOKEN_NAME: string;
     TOKEN_SYMBOL: string;
-    EXCHANGE_LIST: any[];
-    CATEGORY_LIST: any[];
-    TM_LINK: string;
+    DATE: string;
+    TOP_CORRELATION: any[];
   }>;
 }
-interface TokenDataInput {
+interface CorrelationInput {
   token_id?: string;
   token_name?: string;
   symbol?: string;
   category?: string;
   exchange?: string;
-  blockchain_address?: string;
   limit?: number;
   page?: number;
   api_key?: string;
 }
 
-export class TokenDataTool extends BaseApiTool {
+export class CorrelationTool extends BaseApiTool {
   getToolDefinition(): Tool {
     return {
-      name: "get_tokens_data",
+      name: "get_tokens_correlation",
       description:
-        "Fetch token(s) data from Token Metrics API. Provide either token_id or symbol (or both) along with optional date range.",
+        "Fetch token(s) Top 10 and Bottom 10 correlated tokens from the top 100 market cap tokens from Token Metrics API.",
       inputSchema: {
         type: "object",
         properties: {
@@ -55,11 +53,6 @@ export class TokenDataTool extends BaseApiTool {
             type: "string",
             description: "Comma Separated exchange name. Example: binance,gate",
           },
-          blockchain_address: {
-            type: "string",
-            description:
-              "Use this parameter to search tokens through specific blockchains and contract addresses. Input the blockchain name followed by a colon and then the contract address. Example: binance-smart-chain:0x57185189118c7e786cafd5c71f35b16012fa95ad",
-          },
           limit: {
             type: "number",
             description:
@@ -82,13 +75,13 @@ export class TokenDataTool extends BaseApiTool {
   }
 
   protected async performApiRequest(
-    input: TokenDataInput,
+    input: CorrelationInput,
   ): Promise<TokenMetricsResponse> {
     const activeApiKey = this.validateApiKey(input.api_key);
     const params = this.buildParams(input);
 
     return (await this.makeApiRequest(
-      "/tokens",
+      "/correlation",
       params,
       activeApiKey,
     )) as TokenMetricsResponse;

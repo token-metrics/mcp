@@ -39,16 +39,36 @@
       "Find tokens by blockchain address",
       "Get current price for token ID 1",
       "Fetch prices for token IDs 1, 2, and 3",
-      "What's the price of Bitcoin (token ID 1)?"
+      "What's the price of Bitcoin (token ID 1)?",
+      "Get trader grades for BTC and ETH",
+      "Find tokens with trader grade above 80",
+      "Get investor grades for Bitcoin and Ethereum",
+      "Show long-term investment grades for top tokens",
+      "Get hourly OHLCV data for Bitcoin for the last week",
+      "Fetch daily price data for ETH from January to March",
+      "Get overall crypto market metrics",
+      "Show me trading signals for Bitcoin",
+      "Get AI-generated report for Ethereum",
+      "Find resistance and support levels for BTC",
+      "Get quantitative risk metrics for Bitcoin",
+      "Show correlation analysis for Ethereum",
+      "Get scenario analysis for BTC price predictions",
+      "Fetch market sentiment data for the past week",
+      "Get top 20 tokens by market cap",
+      "Show me the highest market cap cryptocurrencies"
     ],
     "_centralized_queries": [
       "Get BTC data with API key: your-key",
       "Search yield farming tokens with API key: your-key",
       "Get price for token ID 1 with API key: your-key",
-      "Fetch prices for tokens 1,2,3 with API key: your-key"
+      "Fetch prices for tokens 1,2,3 with API key: your-key",
+      "Get trader grades for BTC with API key: your-key",
+      "Fetch AI report for Ethereum using API key: your-key",
+      "Get market sentiment data with API key: your-key",
+      "Get correlation analysis with API key: your-key"
     ],
     "_available_tools": {
-      "get_token_data": {
+      "get_tokens_data": {
         "description": "Fetch comprehensive token information",
         "parameters": {
           "token_id": "Comma-separated token IDs (e.g., '1,2,3')",
@@ -62,10 +82,178 @@
           "api_key": "Required for centralized hosting"
         }
       },
-      "get_token_price": {
+      "get_tokens_price": {
         "description": "Fetch current token price data",
         "parameters": {
           "token_id": "Comma-separated token IDs (e.g., '1,2,3') - REQUIRED",
+          "api_key": "Required for centralized hosting"
+        }
+      },
+      "get_tokens_trader_grade": {
+        "description": "Fetch token trader grades and 24h percent changes",
+        "parameters": {
+          "token_id": "Comma-separated token IDs (e.g., '1,2,3')",
+          "symbol": "Comma-separated symbols (e.g., 'BTC,ETH,ADA')",
+          "startDate": "Start date (YYYY-MM-DD format)",
+          "endDate": "End date (YYYY-MM-DD format)",
+          "category": "Comma-separated categories",
+          "exchange": "Comma-separated exchanges",
+          "marketcap": "Minimum market cap in USD",
+          "fdv": "Minimum fully diluted valuation in USD",
+          "volume": "Minimum 24h trading volume in USD",
+          "traderGrade": "Minimum TM Trader Grade",
+          "traderGradePercentChange": "Minimum 24h percent change",
+          "limit": "Number of results (max: 100)",
+          "page": "Page number for pagination",
+          "api_key": "Required for centralized hosting"
+        }
+      },
+      "get_tokens_investor_grade": {
+        "description": "Fetch token long-term grades including Technology and Fundamental metrics",
+        "parameters": {
+          "token_id": "Comma-separated token IDs (e.g., '1,2,3')",
+          "symbol": "Comma-separated symbols (e.g., 'BTC,ETH,ADA')",
+          "startDate": "Start date (YYYY-MM-DD format)",
+          "endDate": "End date (YYYY-MM-DD format)",
+          "category": "Comma-separated categories",
+          "exchange": "Comma-separated exchanges",
+          "marketcap": "Minimum market cap in USD",
+          "fdv": "Minimum fully diluted valuation in USD",
+          "volume": "Minimum 24h trading volume in USD",
+          "investorGrade": "Minimum TM Investor Grade",
+          "limit": "Number of results (max: 100)",
+          "page": "Page number for pagination",
+          "api_key": "Required for centralized hosting"
+        }
+      },
+      "get_tokens_hourly_ohlcv": {
+        "description": "Fetch hourly OHLCV (Open, High, Low, Close, Volume) data",
+        "parameters": {
+          "token_id": "Comma-separated token IDs (e.g., '1,2,3')",
+          "symbol": "Comma-separated symbols (e.g., 'BTC,ETH,ADA')",
+          "token_name": "Comma-separated names (e.g., 'Bitcoin,Ethereum')",
+          "startDate": "Start date (YYYY-MM-DD format)",
+          "endDate": "End date (YYYY-MM-DD format)",
+          "limit": "Number of results (max: 100)",
+          "page": "Page number for pagination",
+          "api_key": "Required for centralized hosting"
+        }
+      },
+      "get_tokens_daily_ohlcv": {
+        "description": "Fetch daily OHLCV (Open, High, Low, Close, Volume) data",
+        "parameters": {
+          "token_id": "Comma-separated token IDs (e.g., '1,2,3')",
+          "symbol": "Comma-separated symbols (e.g., 'BTC,ETH,ADA')",
+          "token_name": "Comma-separated names (e.g., 'Bitcoin,Ethereum')",
+          "startDate": "Start date (YYYY-MM-DD format)",
+          "endDate": "End date (YYYY-MM-DD format)",
+          "limit": "Number of results (max: 100)",
+          "page": "Page number for pagination",
+          "api_key": "Required for centralized hosting"
+        }
+      },
+      "get_market_metrics": {
+        "description": "Fetch overall crypto market metrics and signals",
+        "parameters": {
+          "startDate": "Start date (YYYY-MM-DD format)",
+          "endDate": "End date (YYYY-MM-DD format)",
+          "limit": "Number of results (max: 100)",
+          "page": "Page number for pagination",
+          "api_key": "Required for centralized hosting"
+        }
+      },
+      "get_tokens_trading_signal": {
+        "description": "Fetch trading signals and performance metrics",
+        "parameters": {
+          "token_id": "Comma-separated token IDs (e.g., '1,2,3')",
+          "symbol": "Comma-separated symbols (e.g., 'BTC,ETH,ADA')",
+          "startDate": "Start date (YYYY-MM-DD format)",
+          "endDate": "End date (YYYY-MM-DD format)",
+          "category": "Comma-separated categories",
+          "exchange": "Comma-separated exchanges",
+          "limit": "Number of results (max: 100)",
+          "page": "Page number for pagination",
+          "api_key": "Required for centralized hosting"
+        }
+      },
+      "get_tokens_ai_report": {
+        "description": "Fetch AI-generated reports including investment analyses, deep dives, and code reviews",
+        "parameters": {
+          "token_id": "Comma-separated token IDs (e.g., '1,2,3')",
+          "symbol": "Comma-separated symbols (e.g., 'BTC,ETH,ADA')",
+          "limit": "Number of results (max: 100)",
+          "page": "Page number for pagination",
+          "api_key": "Required for centralized hosting"
+        }
+      },
+      "get_crypto_investor_data": {
+        "description": "Fetch crypto investor-related data and metrics",
+        "parameters": {
+          "limit": "Number of results (max: 100)",
+          "page": "Page number for pagination",
+          "api_key": "Required for centralized hosting"
+        }
+      },
+      "get_top_tokens_by_market_cap": {
+        "description": "Fetch the list of top cryptocurrencies by market capitalization",
+        "parameters": {
+          "top_k": "Number of top cryptocurrencies to retrieve (default: 50, max: 100)",
+          "page": "Page number for pagination",
+          "api_key": "Required for centralized hosting"
+        }
+      },
+      "get_tokens_resistance_support": {
+        "description": "Fetch resistance and support level data",
+        "parameters": {
+          "token_id": "Comma-separated token IDs (e.g., '1,2,3')",
+          "symbol": "Comma-separated symbols (e.g., 'BTC,ETH,ADA')",
+          "limit": "Number of results (max: 100)",
+          "page": "Page number for pagination",
+          "api_key": "Required for centralized hosting"
+        }
+      },
+      "get_sentiment_data": {
+        "description": "Fetch market sentiment data from various sources including news, Reddit, and Twitter",
+        "parameters": {
+          "startDate": "Start date (YYYY-MM-DD format)",
+          "endDate": "End date (YYYY-MM-DD format)",
+          "limit": "Number of results (max: 100)",
+          "page": "Page number for pagination",
+          "api_key": "Required for centralized hosting"
+        }
+      },
+      "get_tokens_quant_metrics": {
+        "description": "Fetch quantitative risk and performance metrics",
+        "parameters": {
+          "token_id": "Comma-separated token IDs (e.g., '1,2,3')",
+          "symbol": "Comma-separated symbols (e.g., 'BTC,ETH,ADA')",
+          "startDate": "Start date (YYYY-MM-DD format)",
+          "endDate": "End date (YYYY-MM-DD format)",
+          "limit": "Number of results (max: 100)",
+          "page": "Page number for pagination",
+          "api_key": "Required for centralized hosting"
+        }
+      },
+      "get_tokens_scenario_analysis": {
+        "description": "Fetch price predictions based on different crypto market scenarios",
+        "parameters": {
+          "token_id": "Comma-separated token IDs (e.g., '1,2,3')",
+          "symbol": "Comma-separated symbols (e.g., 'BTC,ETH,ADA')",
+          "limit": "Number of results (max: 100)",
+          "page": "Page number for pagination",
+          "api_key": "Required for centralized hosting"
+        }
+      },
+      "get_tokens_correlation": {
+        "description": "Fetch top 10 and bottom 10 correlated tokens from the top 100 market cap tokens",
+        "parameters": {
+          "token_id": "Comma-separated token IDs (e.g., '1,2,3')",
+          "symbol": "Comma-separated symbols (e.g., 'BTC,ETH,ADA')",
+          "token_name": "Comma-separated names (e.g., 'Bitcoin,Ethereum')",
+          "category": "Comma-separated categories",
+          "exchange": "Comma-separated exchanges",
+          "limit": "Number of results (max: 100)",
+          "page": "Page number for pagination",
           "api_key": "Required for centralized hosting"
         }
       }

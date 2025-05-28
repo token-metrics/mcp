@@ -166,6 +166,45 @@ Once configured, you can use the server in Cursor by asking questions like:
 - "What's the current price of token ID 1?"
 - "Get price data for multiple tokens with IDs 1,2,3"
 
+**Trader Grade Queries:**
+
+- "Get trader grades for BTC and ETH"
+- "Find tokens with trader grade above 80"
+- "Show trader grade changes for Bitcoin in the last week"
+- "Get trader grades for DeFi tokens with high volume"
+
+**Investor Grade Queries:**
+
+- "Get investor grades for Bitcoin and Ethereum"
+- "Find tokens with high fundamental grades"
+- "Show long-term investment grades for top market cap tokens"
+
+**OHLCV Data Queries:**
+
+- "Get hourly OHLCV data for Bitcoin for the last week"
+- "Fetch daily price data for ETH from January to March 2024"
+- "Show me the trading volume for BTC over the past month"
+
+**Market Analysis Queries:**
+
+- "Get overall crypto market metrics"
+- "Show me trading signals for Bitcoin"
+- "Get AI-generated report for Ethereum"
+- "Find resistance and support levels for BTC"
+
+**Advanced Analytics Queries:**
+
+- "Get quantitative risk metrics for Bitcoin"
+- "Show correlation analysis for Ethereum"
+- "Get scenario analysis for BTC price predictions"
+- "Fetch market sentiment data for the past week"
+
+**Top Tokens and Rankings:**
+
+- "Get top 20 tokens by market cap"
+- "Show me the highest market cap cryptocurrencies"
+- "Find top performing tokens this month"
+
 **Centralized Hosting Mode:**
 The assistant will prompt users for their API key when needed, or you can provide it explicitly:
 
@@ -179,11 +218,17 @@ The assistant will prompt users for their API key when needed, or you can provid
 - "Get price for token ID 1 using API key: your-api-key-here"
 - "Fetch prices for tokens 1,2,3 with my API key: your-api-key-here"
 
+**Advanced Queries with API Key:**
+
+- "Get trader grades for BTC with API key: your-api-key-here"
+- "Fetch AI report for Ethereum using API key: your-api-key-here"
+- "Get market sentiment data with my API key: your-api-key-here"
+
 ## Available Tools and Parameters
 
-The server provides two main tools:
+The server provides 17 comprehensive tools:
 
-### 1. `get_token_data` - Token Information
+### 1. `get_tokens_data` - Token Information
 
 Search and retrieve comprehensive token data including names, symbols, IDs, and Token Metrics URLs.
 
@@ -198,7 +243,7 @@ Search and retrieve comprehensive token data including names, symbols, IDs, and 
 - **limit**: Number of results (default: 50, max: 100)
 - **page**: Page number for pagination
 
-### 2. `get_token_price` - Token Price Information
+### 2. `get_tokens_price` - Token Price Information
 
 Fetch current price data for tokens by their IDs.
 
@@ -206,6 +251,164 @@ Fetch current price data for tokens by their IDs.
 
 - **token_id** (required): Comma-separated token IDs (e.g., "1,2,3")
 - **api_key** (optional): API key for centralized hosting mode
+
+### 3. `get_tokens_trader_grade` - Token Trader Grade
+
+Fetch trader grades and 24h percent changes for specific dates or date ranges.
+
+**Parameters:**
+
+- **token_id**: Token IDs (e.g., "1,2,3")
+- **symbol**: Token symbols (e.g., "BTC,ETH,ADA")
+- **startDate**: Start date (YYYY-MM-DD format)
+- **endDate**: End date (YYYY-MM-DD format)
+- **category**: Categories (e.g., "defi,yield farming")
+- **exchange**: Exchanges (e.g., "binance,gate")
+- **marketcap**: Minimum market cap in USD
+- **fdv**: Minimum fully diluted valuation in USD
+- **volume**: Minimum 24h trading volume in USD
+- **traderGrade**: Minimum TM Trader Grade
+- **traderGradePercentChange**: Minimum 24h percent change in TM Trader Grade
+
+### 4. `get_tokens_investor_grade` - Token Investor Grade
+
+Fetch long-term grades including Technology and Fundamental metrics.
+
+**Parameters:**
+
+- **token_id**: Token IDs (e.g., "1,2,3")
+- **symbol**: Token symbols (e.g., "BTC,ETH,ADA")
+- **startDate**: Start date (YYYY-MM-DD format)
+- **endDate**: End date (YYYY-MM-DD format)
+- **category**: Categories (e.g., "defi,yield farming")
+- **exchange**: Exchanges (e.g., "binance,gate")
+- **marketcap**: Minimum market cap in USD
+- **fdv**: Minimum fully diluted valuation in USD
+- **volume**: Minimum 24h trading volume in USD
+- **investorGrade**: Minimum TM Investor Grade
+
+### 5. `get_tokens_hourly_ohlcv` - Hourly OHLCV Data
+
+Fetch hourly Open, High, Low, Close, Volume data.
+
+**Parameters:**
+
+- **token_id**: Token IDs (e.g., "1,2,3")
+- **symbol**: Token symbols (e.g., "BTC,ETH,ADA")
+- **token_name**: Token names (e.g., "Bitcoin,Ethereum")
+- **startDate**: Start date (YYYY-MM-DD format)
+- **endDate**: End date (YYYY-MM-DD format)
+
+### 6. `get_tokens_daily_ohlcv` - Daily OHLCV Data
+
+Fetch daily Open, High, Low, Close, Volume data.
+
+**Parameters:**
+
+- **token_id**: Token IDs (e.g., "1,2,3")
+- **symbol**: Token symbols (e.g., "BTC,ETH,ADA")
+- **token_name**: Token names (e.g., "Bitcoin,Ethereum")
+- **startDate**: Start date (YYYY-MM-DD format)
+- **endDate**: End date (YYYY-MM-DD format)
+
+### 7. `get_market_metrics` - Market Metrics
+
+Fetch overall crypto market metrics and signals.
+
+**Parameters:**
+
+- **startDate**: Start date (YYYY-MM-DD format)
+- **endDate**: End date (YYYY-MM-DD format)
+
+### 8. `get_tokens_trading_signal` - Trading Signals
+
+Fetch trading signals and performance metrics.
+
+**Parameters:**
+
+- **token_id**: Token IDs (e.g., "1,2,3")
+- **symbol**: Token symbols (e.g., "BTC,ETH,ADA")
+- **startDate**: Start date (YYYY-MM-DD format)
+- **endDate**: End date (YYYY-MM-DD format)
+- **category**: Categories (e.g., "defi,yield farming")
+- **exchange**: Exchanges (e.g., "binance,gate")
+
+### 9. `get_tokens_ai_report` - AI-Generated Reports
+
+Fetch comprehensive AI-generated reports including investment analyses, deep dives, and code reviews.
+
+**Parameters:**
+
+- **token_id**: Token IDs (e.g., "1,2,3")
+- **symbol**: Token symbols (e.g., "BTC,ETH,ADA")
+
+### 10. `get_crypto_investor_data` - Crypto Investor Data
+
+Fetch crypto investor-related data and metrics.
+
+### 11. `get_top_tokens_by_market_cap` - Top Tokens by Market Cap
+
+Fetch the list of top cryptocurrencies by market capitalization.
+
+**Parameters:**
+
+- **top_k**: Number of top cryptocurrencies to retrieve (default: 50, max: 100)
+
+### 12. `get_tokens_resistance_support` - Resistance and Support Levels
+
+Fetch resistance and support level data.
+
+**Parameters:**
+
+- **token_id**: Token IDs (e.g., "1,2,3")
+- **symbol**: Token symbols (e.g., "BTC,ETH,ADA")
+
+### 13. `get_sentiment_data` - Market Sentiment Data
+
+Fetch market sentiment data from various sources including news, Reddit, and Twitter.
+
+**Parameters:**
+
+- **startDate**: Start date (YYYY-MM-DD format)
+- **endDate**: End date (YYYY-MM-DD format)
+
+### 14. `get_tokens_quant_metrics` - Quantitative Metrics
+
+Fetch quantitative risk and performance metrics.
+
+**Parameters:**
+
+- **token_id**: Token IDs (e.g., "1,2,3")
+- **symbol**: Token symbols (e.g., "BTC,ETH,ADA")
+- **startDate**: Start date (YYYY-MM-DD format)
+- **endDate**: End date (YYYY-MM-DD format)
+
+### 15. `get_tokens_scenario_analysis` - Scenario Analysis
+
+Fetch price predictions based on different crypto market scenarios.
+
+**Parameters:**
+
+- **token_id**: Token IDs (e.g., "1,2,3")
+- **symbol**: Token symbols (e.g., "BTC,ETH,ADA")
+
+### 16. `get_tokens_correlation` - Token Correlation Analysis
+
+Fetch top 10 and bottom 10 correlated tokens from the top 100 market cap tokens.
+
+**Parameters:**
+
+- **token_id**: Token IDs (e.g., "1,2,3")
+- **symbol**: Token symbols (e.g., "BTC,ETH,ADA")
+- **token_name**: Token names (e.g., "Bitcoin,Ethereum")
+- **category**: Categories (e.g., "defi,yield farming")
+- **exchange**: Exchanges (e.g., "binance,gate")
+
+**Common Parameters for All Tools:**
+
+- **limit**: Number of results (default: 50, max: 100)
+- **page**: Page number for pagination
+- **api_key**: API key for centralized hosting mode
 
 ## Troubleshooting
 
