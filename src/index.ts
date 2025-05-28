@@ -54,6 +54,7 @@ class TokenMetricsMCPServer {
   async start(): Promise<void> {
     const transport = new StdioServerTransport();
     await this.server.connect(transport);
+
     console.log("Token Metrics MCP Server running on stdio");
   }
 }

@@ -6,40 +6,48 @@ interface TokenMetricsResponse extends TokenMetricsBaseResponse {
     TOKEN_ID: number;
     TOKEN_NAME: string;
     TOKEN_SYMBOL: string;
-    EXCHANGE_LIST: any[];
-    CATEGORY_LIST: any[];
-    TM_LINK: string;
+    DATE: string;
+    VOLATILITY: number;
+    ALL_TIME_RETURN: number;
+    CAGR: number;
+    SHARPE: number;
+    SORTINO: number;
+    MAX_DRAWDOWN: number;
+    SKEW: number;
+    TAIL_RATIO: number;
+    RISK_REWARD_RATIO: number;
+    PROFIT_FACTOR: number;
+    KURTOSIS: number;
+    DAILY_VALUE_AT_RISK: number;
+    DAILY_RETURN_AVG: number;
+    DAILY_RETURN_STD: number;
   }>;
 }
-interface TokenDataInput {
+interface QuantMetricsInput {
   token_id?: string;
-  token_name?: string;
   symbol?: string;
   category?: string;
   exchange?: string;
-  blockchain_address?: string;
+  marketcap?: string;
+  fdv?: string;
+  volume?: string;
   limit?: number;
   page?: number;
   api_key?: string;
 }
 
-export class TokenDataTool extends BaseApiTool {
+export class QuantMetricsTool extends BaseApiTool {
   getToolDefinition(): Tool {
     return {
-      name: "get_tokens_data",
+      name: "get_tokens_quant_metrics",
       description:
-        "Fetch token(s) data from Token Metrics API. Provide either token_id or symbol (or both) along with optional date range.",
+        "Fetch the latest quantitative metrics for token(s). Note that Token Metrics pricing data starts on 2019-01-01 for most tokens. More historical data will be available soon.",
       inputSchema: {
         type: "object",
         properties: {
           token_id: {
             type: "string",
             description: "Comma-separated string of token IDs (e.g., '1,2,3')",
-          },
-          token_name: {
-            type: "string",
-            description:
-              "Comma Separated Crypto Asset Names (e.g., Bitcoin, Ethereum)",
           },
           symbol: {
             type: "string",
@@ -55,10 +63,20 @@ export class TokenDataTool extends BaseApiTool {
             type: "string",
             description: "Comma Separated exchange name. Example: binance,gate",
           },
-          blockchain_address: {
+          marketcap: {
             type: "string",
             description:
-              "Use this parameter to search tokens through specific blockchains and contract addresses. Input the blockchain name followed by a colon and then the contract address. Example: binance-smart-chain:0x57185189118c7e786cafd5c71f35b16012fa95ad",
+              "Minimum MarketCap in $ (USD) of the token. Example: 100",
+          },
+          fdv: {
+            type: "string",
+            description:
+              "Minimum fully diluted valuation in $ (USD) of the token. Example: 100",
+          },
+          volume: {
+            type: "string",
+            description:
+              "Minimum 24h trading volume in $ (USD) of the token. Example: 100",
           },
           limit: {
             type: "number",
@@ -82,13 +100,13 @@ export class TokenDataTool extends BaseApiTool {
   }
 
   protected async performApiRequest(
-    input: TokenDataInput,
+    input: QuantMetricsInput,
   ): Promise<TokenMetricsResponse> {
     const activeApiKey = this.validateApiKey(input.api_key);
     const params = this.buildParams(input);
 
     return (await this.makeApiRequest(
-      "/tokens",
+      "/quantmetrics",
       params,
       activeApiKey,
     )) as TokenMetricsResponse;

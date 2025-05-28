@@ -6,27 +6,35 @@ interface TokenMetricsResponse extends TokenMetricsBaseResponse {
     TOKEN_ID: number;
     TOKEN_NAME: string;
     TOKEN_SYMBOL: string;
-    CURRENT_PRICE: number;
+    EXCHANGE_LIST: any[];
+    CATEGORY_LIST: any[];
+    TM_LINK: string;
   }>;
 }
-
-interface PriceInput {
-  token_id: string;
+interface TopTokensInput {
+  top_k: number;
+  page: number;
   api_key?: string;
 }
 
-export class PriceTool extends BaseApiTool {
+export class TopTokensTool extends BaseApiTool {
   getToolDefinition(): Tool {
     return {
-      name: "get_tokens_price",
+      name: "get_top_tokens_by_market_cap",
       description:
-        "Fetch token(s) price from Token Metrics API. Provide token_id. For hosted servers, include your api_key parameter.",
+        "Fetch the the list of coins with top market cap from Token Metrics API.",
       inputSchema: {
         type: "object",
         properties: {
-          token_id: {
-            type: "string",
-            description: "Comma-separated string of token IDs (e.g., '1,2,3')",
+          top_k: {
+            type: "number",
+            description:
+              "Specifies the number of top cryptocurrencies to retrieve, based on their market capitalization. Default is 50. Maximum is 100. Exmaple: 100",
+          },
+          page: {
+            type: "number",
+            description:
+              "Enables pagination and data retrieval control by skipping a specified number of items before fetching data. Page should be a non-negative integer, with 1 indicating the beginning of the dataset.",
           },
           api_key: {
             type: "string",
@@ -34,19 +42,19 @@ export class PriceTool extends BaseApiTool {
               "Your Token Metrics API key (required if not set as environment variable)",
           },
         },
-        required: ["token_id"],
+        required: [],
       },
     } as Tool;
   }
 
   protected async performApiRequest(
-    input: PriceInput,
+    input: TopTokensInput,
   ): Promise<TokenMetricsResponse> {
     const activeApiKey = this.validateApiKey(input.api_key);
     const params = this.buildParams(input);
 
     return (await this.makeApiRequest(
-      "/price",
+      "/top-market-cap-tokens",
       params,
       activeApiKey,
     )) as TokenMetricsResponse;
