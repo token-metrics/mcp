@@ -7,7 +7,7 @@ import {
 } from "@modelcontextprotocol/sdk/types.js";
 import { AVAILABLE_TOOLS } from "./tools/index.js";
 
-class TokenMetricsMCPServer {
+export class TokenMetricsMCPServer {
   private server: Server;
 
   constructor() {
@@ -58,26 +58,3 @@ class TokenMetricsMCPServer {
     console.log("Token Metrics MCP Server running on stdio");
   }
 }
-
-async function main(): Promise<void> {
-  const server = new TokenMetricsMCPServer();
-  await server.start();
-}
-
-process.on("SIGINT", () => {
-  console.error("Received SIGINT, shutting down gracefully");
-  process.exit(0);
-});
-
-process.on("SIGTERM", () => {
-  console.error("Received SIGTERM, shutting down gracefully");
-  process.exit(0);
-});
-
-main().catch((error: unknown) => {
-  console.error(
-    "Failed to start server:",
-    error instanceof Error ? error.message : String(error),
-  );
-  process.exit(1);
-});

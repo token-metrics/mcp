@@ -1,17 +1,39 @@
 {
-  "name": "mcp-server",
-  "version": "1.0.0",
+  "name": "@token-metrics-ai/mcp",
+  "version": "1.0.1",
   "type": "module",
-  "main": "build/src/index.js",
+  "bin": "build/src/cli.js",
+  "files": [
+    "build/src/**/*",
+    "README.md",
+    "LICENSE",
+    "package.json"
+  ],
   "scripts": {
-    "build": "rimraf ./build && tsc",
-    "start:dev": "npx nodemon --exec \"npm run build && node build/src/index.js\" --ext ts --watch src",
-    "start": "npm run build && node build/src/index.js",
-    "lint": "eslint . --ext .ts"
+    "build": "rimraf ./build && tsc && node -e \"require('fs').chmodSync('build/src/cli.js', '755')\"",
+    "start:dev": "npx nodemon --exec \"npm run build && node build/src/cli.js\" --ext ts --watch src",
+    "start": "npm run build && node build/src/cli.js",
+    "lint": "eslint . --ext .ts",
+    "test": "echo \"No tests specified\" && exit 0",
+    "prepublishOnly": "npm run build"
   },
-  "author": "Token Metrics",
-  "license": "ISC",
-  "description": "MCP Server for Token Metrics API",
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "token-metrics",
+    "tokenmetrics",
+    "crypto",
+    "ai",
+    "llm"
+  ],
+  "author": "Token Metrics <support@tokenmetrics.com> (https://www.tokenmetrics.com/)",
+  "license": "MIT",
+  "description": "Model Context Protocol server for Token Metrics API - provides comprehensive cryptocurrency data, analytics, and insights",
+  "repository": "git+https://github.com/token-metrics/mcp-server.git",
+  "homepage": "https://github.com/token-metrics/mcp-server#readme",
+  "bugs": {
+    "url": "https://github.com/token-metrics/mcp-server/issues"
+  },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.7.0",
     "axios": "^1.6.0"
@@ -28,5 +50,8 @@
     "rimraf": "^5.0.0",
     "ts-node": "^10.9.1",
     "typescript": "^5.1.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
   }
 }

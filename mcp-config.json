@@ -12,7 +12,7 @@
   "_direct_node_mode_self_hosted": {
     "token-metrics": {
       "command": "node",
-      "args": ["build/src/index.js"],
+      "args": ["build/src/cli.js"],
       "cwd": ".",
       "env": {
         "TOKEN_METRICS_API_KEY": "your-api-key-here"
@@ -23,7 +23,7 @@
   "_direct_node_mode_centralized_hosting": {
     "token-metrics": {
       "command": "node",
-      "args": ["build/src/index.js"],
+      "args": ["build/src/cli.js"],
       "cwd": ".",
       "env": {}
     }
