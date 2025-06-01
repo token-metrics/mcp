@@ -130,8 +130,8 @@ The Token Metrics MCP server provides the following tools:
 1. Clone the repository:
 
 ```bash
-git clone https://github.com/token-metrics/mcp-server.git
-cd mcp-server
+git clone https://github.com/token-metrics/mcp.git
+cd mcp
 ```
 
 2. Install dependencies:
@@ -200,7 +200,7 @@ The server includes comprehensive error handling:
 ## Support
 
 - **Documentation**: [Token Metrics API Docs](https://developer.tokenmetrics.com)
-- **Issues**: [GitHub Issues](https://github.com/token-metrics/mcp-server/issues)
+- **Issues**: [GitHub Issues](https://github.com/token-metrics/mcp/issues)
 - **Support**: [Token Metrics Support](https://www.tokenmetrics.com/contact-us)
 
 ## License

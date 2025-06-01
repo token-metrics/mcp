@@ -47,7 +47,7 @@ EXAMPLES:
 ENVIRONMENT VARIABLES:
   TOKEN_METRICS_API_KEY    Your Token Metrics API key
 
-For more information, visit: https://github.com/token-metrics/mcp-server
+For more information, visit: https://github.com/token-metrics/mcp
 `);
 }
 

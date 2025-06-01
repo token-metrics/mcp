@@ -69,7 +69,7 @@ Add this configuration to your MCP settings file:
   "mcpServers": {
     "token-metrics": {
       "command": "node",
-      "args": ["/absolute/path/to/mcp-server/build/src/index.js"],
+      "args": ["/absolute/path/to/mcp-server/build/src/cli.js"],
       "env": {
         "TOKEN_METRICS_API_KEY": "your-api-key-here"
       }
@@ -85,7 +85,7 @@ Add this configuration to your MCP settings file:
   "mcpServers": {
     "token-metrics": {
       "command": "node",
-      "args": ["/absolute/path/to/mcp-server/build/src/index.js"],
+      "args": ["/absolute/path/to/mcp-server/build/src/cli.js"],
       "env": {}
     }
   }

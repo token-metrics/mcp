@@ -29,10 +29,10 @@
   "author": "Token Metrics <support@tokenmetrics.com> (https://www.tokenmetrics.com/)",
   "license": "MIT",
   "description": "Model Context Protocol server for Token Metrics API - provides comprehensive cryptocurrency data, analytics, and insights",
-  "repository": "git+https://github.com/token-metrics/mcp-server.git",
-  "homepage": "https://github.com/token-metrics/mcp-server#readme",
+  "repository": "git+https://github.com/token-metrics/mcp.git",
+  "homepage": "https://github.com/token-metrics/mcp#readme",
   "bugs": {
-    "url": "https://github.com/token-metrics/mcp-server/issues"
+    "url": "https://github.com/token-metrics/mcp/issues"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.7.0",

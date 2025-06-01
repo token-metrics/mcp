@@ -12,7 +12,7 @@ This guide provides detailed setup instructions for using the Token Metrics MCP 
 Run our automated setup script:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/token-metrics/mcp-server/main/scripts/setup.sh | bash
+curl -fsSL https://raw.githubusercontent.com/token-metrics/mcp/main/scripts/setup.sh | bash
 ```
 
 Or manually:
@@ -297,8 +297,8 @@ npx @modelcontextprotocol/inspector npx @token-metrics-ai/mcp@latest --api-key=y
 
 ## Getting Help
 
-- **Documentation:** [GitHub Repository](https://github.com/token-metrics/mcp-server)
-- **Issues:** [GitHub Issues](https://github.com/token-metrics/mcp-server/issues)
+- **Documentation:** [GitHub Repository](https://github.com/token-metrics/mcp)
+- **Issues:** [GitHub Issues](https://github.com/token-metrics/mcp/issues)
 - **API Documentation:** [Token Metrics API Docs](https://developer.tokenmetrics.com)
 - **Support:** [Token Metrics Support](https://www.tokenmetrics.com/contact-us)
 
