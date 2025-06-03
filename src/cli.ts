@@ -62,14 +62,14 @@ async function main(): Promise<void> {
   // Get API key from args or environment
   const apiKey = args.apiKey || process.env.TOKEN_METRICS_API_KEY;
 
-  if (!apiKey) {
-    console.error("Error: Token Metrics API key is required.");
-    console.error(
-      "Provide it via --api-key argument or TOKEN_METRICS_API_KEY environment variable.",
-    );
-    console.error("Run with --help for more information.");
-    process.exit(1);
-  }
+  // if (!apiKey) {
+  //   console.error("Error: Token Metrics API key is required.");
+  //   console.error(
+  //     "Provide it via --api-key argument or TOKEN_METRICS_API_KEY environment variable.",
+  //   );
+  //   console.error("Run with --help for more information.");
+  //   process.exit(1);
+  // }
 
   // Set the API key in environment for the server to use
   process.env.TOKEN_METRICS_API_KEY = apiKey;
