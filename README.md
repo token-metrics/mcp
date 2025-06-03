@@ -1,5 +1,7 @@
 # Token Metrics MCP Server
 
+[![smithery badge](https://smithery.ai/badge/@token-metrics/mcp)](https://smithery.ai/server/@token-metrics/mcp)
+
 The Token Metrics Model Context Protocol (MCP) server provides comprehensive cryptocurrency data, analytics, and insights through function calling. This server enables AI assistants and agents to access Token Metrics' powerful API for real-time crypto market data, trading signals, price predictions, and advanced analytics.
 
 ## Features
