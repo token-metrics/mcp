@@ -12,7 +12,7 @@ interface TokenMetricsResponse extends TokenMetricsBaseResponse {
   }>;
 }
 interface IndicesPerformanceInput {
-  id: string;
+  id: number;
   startDate: string;
   endDate: string;
   limit: number;
@@ -29,7 +29,7 @@ export class IndicesPerformanceTool extends BaseApiTool {
         type: "object",
         properties: {
           id: {
-            type: "string",
+            type: "number",
             description: "Id of the index. Example: 1",
           },
           startDate: {

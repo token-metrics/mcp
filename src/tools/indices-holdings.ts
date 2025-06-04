@@ -19,7 +19,7 @@ interface TokenMetricsResponse extends TokenMetricsBaseResponse {
   }>;
 }
 interface IndicesHoldingsInput {
-  id: string;
+  id: number;
 }
 
 export class IndicesHoldingsTool extends BaseApiTool {
@@ -32,7 +32,7 @@ export class IndicesHoldingsTool extends BaseApiTool {
         type: "object",
         properties: {
           id: {
-            type: "string",
+            type: "number",
             description: "Id of the index. Example: 1",
           },
         },
