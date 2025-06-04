@@ -1,6 +1,6 @@
 {
   "name": "@token-metrics-ai/mcp",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "type": "module",
   "bin": "build/src/cli.js",
   "files": [
