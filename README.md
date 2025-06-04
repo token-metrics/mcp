@@ -179,3 +179,7 @@ The server includes comprehensive error handling:
 ## License
 
 MIT License - see [LICENSE](LICENSE) file for details.
+
+<a href="https://glama.ai/mcp/servers/@token-metrics/mcp">
+  <img width="380" height="200" src="https://glama.ai/mcp/servers/@token-metrics/mcp/badge" />
+</a>
