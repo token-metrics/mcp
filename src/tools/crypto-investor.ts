@@ -14,7 +14,6 @@ interface TokenMetricsResponse extends TokenMetricsBaseResponse {
 interface CryptoInvestorInput {
   limit: number;
   page: number;
-  api_key?: string;
 }
 
 export class CryptoInvestorTool extends BaseApiTool {
@@ -36,11 +35,6 @@ export class CryptoInvestorTool extends BaseApiTool {
             description:
               "Enables pagination and data retrieval control by skipping a specified number of items before fetching data. Page should be a non-negative integer, with 1 indicating the beginning of the dataset.",
           },
-          api_key: {
-            type: "string",
-            description:
-              "Your Token Metrics API key (required if not set as environment variable)",
-          },
         },
         required: [],
       },
@@ -50,13 +44,12 @@ export class CryptoInvestorTool extends BaseApiTool {
   protected async performApiRequest(
     input: CryptoInvestorInput,
   ): Promise<TokenMetricsResponse> {
-    const activeApiKey = this.validateApiKey(input.api_key);
+    this.validateApiKey();
     const params = this.buildParams(input);
 
     return (await this.makeApiRequest(
       "/crypto-investors",
       params,
-      activeApiKey,
     )) as TokenMetricsResponse;
   }
 }

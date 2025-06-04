@@ -15,7 +15,6 @@ interface ScenarioAnalysisInput {
   symbol?: string;
   limit?: number;
   page?: number;
-  api_key?: string;
 }
 
 export class ScenarioAnalysisTool extends BaseApiTool {
@@ -46,11 +45,6 @@ export class ScenarioAnalysisTool extends BaseApiTool {
             description:
               "Enables pagination and data retrieval control by skipping a specified number of items before fetching data. Page should be a non-negative integer, with 1 indicating the beginning of the dataset.",
           },
-          api_key: {
-            type: "string",
-            description:
-              "Your Token Metrics API key (required if not set as environment variable)",
-          },
         },
         required: [],
       },
@@ -60,13 +54,12 @@ export class ScenarioAnalysisTool extends BaseApiTool {
   protected async performApiRequest(
     input: ScenarioAnalysisInput,
   ): Promise<TokenMetricsResponse> {
-    const activeApiKey = this.validateApiKey(input.api_key);
+    this.validateApiKey();
     const params = this.buildParams(input);
 
     return (await this.makeApiRequest(
       "/scenario-analysis",
       params,
-      activeApiKey,
     )) as TokenMetricsResponse;
   }
 }

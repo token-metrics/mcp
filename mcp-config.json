@@ -1,31 +1,11 @@
 {
-  "_comment": "Choose one configuration based on your hosting mode and setup preference",
-
-  "_shell_script_mode": {
-    "_comment": "Recommended approach using a shell script for easier setup and path management",
+  "_direct": {
     "token-metrics": {
-      "command": "/path/to/start-tm-mcp-server.sh",
-      "args": []
-    }
-  },
-
-  "_direct_node_mode_self_hosted": {
-    "token-metrics": {
-      "command": "node",
-      "args": ["build/src/cli.js"],
-      "cwd": ".",
+      "command": "npx",
+      "args": ["-y", "@token-metrics-ai/mcp@latest"],
       "env": {
-        "TOKEN_METRICS_API_KEY": "your-api-key-here"
+        "TOKEN_METRICS_API_KEY": "YOUR_API_KEY"
       }
-    }
-  },
-
-  "_direct_node_mode_centralized_hosting": {
-    "token-metrics": {
-      "command": "node",
-      "args": ["build/src/cli.js"],
-      "cwd": ".",
-      "env": {}
     }
   },
 
@@ -78,15 +58,13 @@
           "exchange": "Comma-separated exchanges (e.g., 'binance,gate')",
           "blockchain_address": "Blockchain:address format",
           "limit": "Number of results (max: 100)",
-          "page": "Page number for pagination",
-          "api_key": "Required for centralized hosting"
+          "page": "Page number for pagination"
         }
       },
       "get_tokens_price": {
         "description": "Fetch current token price data",
         "parameters": {
-          "token_id": "Comma-separated token IDs (e.g., '1,2,3') - REQUIRED",
-          "api_key": "Required for centralized hosting"
+          "token_id": "Comma-separated token IDs (e.g., '1,2,3') - REQUIRED"
         }
       },
       "get_tokens_trader_grade": {
@@ -104,8 +82,7 @@
           "traderGrade": "Minimum TM Trader Grade",
           "traderGradePercentChange": "Minimum 24h percent change",
           "limit": "Number of results (max: 100)",
-          "page": "Page number for pagination",
-          "api_key": "Required for centralized hosting"
+          "page": "Page number for pagination"
         }
       },
       "get_tokens_investor_grade": {
@@ -122,8 +99,7 @@
           "volume": "Minimum 24h trading volume in USD",
           "investorGrade": "Minimum TM Investor Grade",
           "limit": "Number of results (max: 100)",
-          "page": "Page number for pagination",
-          "api_key": "Required for centralized hosting"
+          "page": "Page number for pagination"
         }
       },
       "get_tokens_hourly_ohlcv": {
@@ -135,8 +111,7 @@
           "startDate": "Start date (YYYY-MM-DD format)",
           "endDate": "End date (YYYY-MM-DD format)",
           "limit": "Number of results (max: 100)",
-          "page": "Page number for pagination",
-          "api_key": "Required for centralized hosting"
+          "page": "Page number for pagination"
         }
       },
       "get_tokens_daily_ohlcv": {
@@ -148,8 +123,7 @@
           "startDate": "Start date (YYYY-MM-DD format)",
           "endDate": "End date (YYYY-MM-DD format)",
           "limit": "Number of results (max: 100)",
-          "page": "Page number for pagination",
-          "api_key": "Required for centralized hosting"
+          "page": "Page number for pagination"
         }
       },
       "get_market_metrics": {
@@ -158,8 +132,7 @@
           "startDate": "Start date (YYYY-MM-DD format)",
           "endDate": "End date (YYYY-MM-DD format)",
           "limit": "Number of results (max: 100)",
-          "page": "Page number for pagination",
-          "api_key": "Required for centralized hosting"
+          "page": "Page number for pagination"
         }
       },
       "get_tokens_trading_signal": {
@@ -172,8 +145,7 @@
           "category": "Comma-separated categories",
           "exchange": "Comma-separated exchanges",
           "limit": "Number of results (max: 100)",
-          "page": "Page number for pagination",
-          "api_key": "Required for centralized hosting"
+          "page": "Page number for pagination"
         }
       },
       "get_tokens_ai_report": {
@@ -182,24 +154,21 @@
           "token_id": "Comma-separated token IDs (e.g., '1,2,3')",
           "symbol": "Comma-separated symbols (e.g., 'BTC,ETH,ADA')",
           "limit": "Number of results (max: 100)",
-          "page": "Page number for pagination",
-          "api_key": "Required for centralized hosting"
+          "page": "Page number for pagination"
         }
       },
       "get_crypto_investor_data": {
         "description": "Fetch crypto investor-related data and metrics",
         "parameters": {
           "limit": "Number of results (max: 100)",
-          "page": "Page number for pagination",
-          "api_key": "Required for centralized hosting"
+          "page": "Page number for pagination"
         }
       },
       "get_top_tokens_by_market_cap": {
         "description": "Fetch the list of top cryptocurrencies by market capitalization",
         "parameters": {
           "top_k": "Number of top cryptocurrencies to retrieve (default: 50, max: 100)",
-          "page": "Page number for pagination",
-          "api_key": "Required for centralized hosting"
+          "page": "Page number for pagination"
         }
       },
       "get_tokens_resistance_support": {
@@ -208,8 +177,7 @@
           "token_id": "Comma-separated token IDs (e.g., '1,2,3')",
           "symbol": "Comma-separated symbols (e.g., 'BTC,ETH,ADA')",
           "limit": "Number of results (max: 100)",
-          "page": "Page number for pagination",
-          "api_key": "Required for centralized hosting"
+          "page": "Page number for pagination"
         }
       },
       "get_sentiment_data": {
@@ -218,8 +186,7 @@
           "startDate": "Start date (YYYY-MM-DD format)",
           "endDate": "End date (YYYY-MM-DD format)",
           "limit": "Number of results (max: 100)",
-          "page": "Page number for pagination",
-          "api_key": "Required for centralized hosting"
+          "page": "Page number for pagination"
         }
       },
       "get_tokens_quant_metrics": {
@@ -230,8 +197,7 @@
           "startDate": "Start date (YYYY-MM-DD format)",
           "endDate": "End date (YYYY-MM-DD format)",
           "limit": "Number of results (max: 100)",
-          "page": "Page number for pagination",
-          "api_key": "Required for centralized hosting"
+          "page": "Page number for pagination"
         }
       },
       "get_tokens_scenario_analysis": {
@@ -240,8 +206,7 @@
           "token_id": "Comma-separated token IDs (e.g., '1,2,3')",
           "symbol": "Comma-separated symbols (e.g., 'BTC,ETH,ADA')",
           "limit": "Number of results (max: 100)",
-          "page": "Page number for pagination",
-          "api_key": "Required for centralized hosting"
+          "page": "Page number for pagination"
         }
       },
       "get_tokens_correlation": {
@@ -253,18 +218,9 @@
           "category": "Comma-separated categories",
           "exchange": "Comma-separated exchanges",
           "limit": "Number of results (max: 100)",
-          "page": "Page number for pagination",
-          "api_key": "Required for centralized hosting"
+          "page": "Page number for pagination"
         }
       }
-    }
-  },
-
-  "mcpServers": {
-    "_comment": "Current recommended configuration using shell script",
-    "token-metrics": {
-      "command": "/tmp/start-token-metrics-server.sh",
-      "args": []
     }
   }
 }

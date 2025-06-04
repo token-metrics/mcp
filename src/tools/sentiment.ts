@@ -17,9 +17,7 @@ interface TokenMetricsResponse extends TokenMetricsBaseResponse {
     TWITTER_SUMMARY: string;
   }>;
 }
-interface SentimentInput {
-  api_key?: string;
-}
+interface SentimentInput {}
 
 export class SentimentTool extends BaseApiTool {
   getToolDefinition(): Tool {
@@ -29,13 +27,7 @@ export class SentimentTool extends BaseApiTool {
         "Fetch the hourly sentiment score for Twitter, Reddit, and all the News, including quick summary of what happened from Token Metrics API.",
       inputSchema: {
         type: "object",
-        properties: {
-          api_key: {
-            type: "string",
-            description:
-              "Your Token Metrics API key (required if not set as environment variable)",
-          },
-        },
+        properties: {},
         required: [],
       },
     } as Tool;
@@ -44,13 +36,12 @@ export class SentimentTool extends BaseApiTool {
   protected async performApiRequest(
     input: SentimentInput,
   ): Promise<TokenMetricsResponse> {
-    const activeApiKey = this.validateApiKey(input.api_key);
+    this.validateApiKey();
     const params = this.buildParams(input);
 
     return (await this.makeApiRequest(
       "/sentiments",
       params,
-      activeApiKey,
     )) as TokenMetricsResponse;
   }
 }

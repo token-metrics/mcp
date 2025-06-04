@@ -14,7 +14,6 @@ interface TokenMetricsResponse extends TokenMetricsBaseResponse {
 interface TopTokensInput {
   top_k: number;
   page: number;
-  api_key?: string;
 }
 
 export class TopTokensTool extends BaseApiTool {
@@ -36,11 +35,6 @@ export class TopTokensTool extends BaseApiTool {
             description:
               "Enables pagination and data retrieval control by skipping a specified number of items before fetching data. Page should be a non-negative integer, with 1 indicating the beginning of the dataset.",
           },
-          api_key: {
-            type: "string",
-            description:
-              "Your Token Metrics API key (required if not set as environment variable)",
-          },
         },
         required: [],
       },
@@ -50,13 +44,12 @@ export class TopTokensTool extends BaseApiTool {
   protected async performApiRequest(
     input: TopTokensInput,
   ): Promise<TokenMetricsResponse> {
-    const activeApiKey = this.validateApiKey(input.api_key);
+    this.validateApiKey();
     const params = this.buildParams(input);
 
     return (await this.makeApiRequest(
       "/top-market-cap-tokens",
       params,
-      activeApiKey,
     )) as TokenMetricsResponse;
   }
 }

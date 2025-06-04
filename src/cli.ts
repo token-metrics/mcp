@@ -15,10 +15,6 @@ function parseArgs(): CLIArgs {
 
     if (arg === "--help" || arg === "-h") {
       args.help = true;
-    } else if (arg === "--api-key") {
-      args.apiKey = process.argv[++i];
-    } else if (arg.startsWith("--api-key=")) {
-      args.apiKey = arg.split("=")[1];
     }
   }
 
@@ -33,13 +29,9 @@ USAGE:
   npx -y @token-metrics-ai/mcp@latest [OPTIONS]
 
 OPTIONS:
-  --api-key <key>    Token Metrics API key (can also be set via TOKEN_METRICS_API_KEY environment variable)
   --help, -h         Show this help message
 
 EXAMPLES:
-  # Run with API key as argument
-  npx -y @token-metrics-ai/mcp@latest --api-key=your_api_key_here
-  
   # Run with API key from environment variable
   export TOKEN_METRICS_API_KEY=your_api_key_here
   npx -y @token-metrics-ai/mcp@latest
@@ -59,20 +51,14 @@ async function main(): Promise<void> {
     process.exit(0);
   }
 
-  // Get API key from args or environment
-  const apiKey = args.apiKey || process.env.TOKEN_METRICS_API_KEY;
-
-  // if (!apiKey) {
+  // if (!process.env.TOKEN_METRICS_API_KEY) {
   //   console.error("Error: Token Metrics API key is required.");
   //   console.error(
-  //     "Provide it via --api-key argument or TOKEN_METRICS_API_KEY environment variable.",
+  //     "Provide it via TOKEN_METRICS_API_KEY environment variable.",
   //   );
   //   console.error("Run with --help for more information.");
   //   process.exit(1);
   // }
-
-  // Set the API key in environment for the server to use
-  process.env.TOKEN_METRICS_API_KEY = apiKey;
 
   const server = new TokenMetricsMCPServer();
   await server.start();

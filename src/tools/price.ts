@@ -12,7 +12,6 @@ interface TokenMetricsResponse extends TokenMetricsBaseResponse {
 
 interface PriceInput {
   token_id: string;
-  api_key?: string;
 }
 
 export class PriceTool extends BaseApiTool {
@@ -20,18 +19,13 @@ export class PriceTool extends BaseApiTool {
     return {
       name: "get_tokens_price",
       description:
-        "Fetch token(s) price from Token Metrics API. Provide token_id. For hosted servers, include your api_key parameter.",
+        "Fetch token(s) price from Token Metrics API. Provide token_id.",
       inputSchema: {
         type: "object",
         properties: {
           token_id: {
             type: "string",
             description: "Comma-separated string of token IDs (e.g., '1,2,3')",
-          },
-          api_key: {
-            type: "string",
-            description:
-              "Your Token Metrics API key (required if not set as environment variable)",
           },
         },
         required: ["token_id"],
@@ -42,13 +36,12 @@ export class PriceTool extends BaseApiTool {
   protected async performApiRequest(
     input: PriceInput,
   ): Promise<TokenMetricsResponse> {
-    const activeApiKey = this.validateApiKey(input.api_key);
+    this.validateApiKey();
     const params = this.buildParams(input);
 
     return (await this.makeApiRequest(
       "/price",
       params,
-      activeApiKey,
     )) as TokenMetricsResponse;
   }
 }

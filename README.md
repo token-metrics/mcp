@@ -20,63 +20,29 @@ The Token Metrics Model Context Protocol (MCP) server provides comprehensive cry
 The easiest way to get started is using npx:
 
 ```bash
-# Run with API key as argument
-npx -y @token-metrics-ai/mcp@latest --api-key=your_api_key_here
-
-# Or set environment variable and run
+# Set environment variable and run
 export TOKEN_METRICS_API_KEY=your_api_key_here
 npx -y @token-metrics-ai/mcp@latest
 ```
 
 ## Setup with AI Clients
 
-### Claude Desktop
+### Claude Desktop or VS Code/Cursor
 
-Add the following to your `claude_desktop_config.json`:
+Add the following to your `claude_desktop_config.json` or `mcp.json`:
 
 ```json
 {
   "mcpServers": {
     "token-metrics": {
       "command": "npx",
-      "args": [
-        "-y",
-        "@token-metrics-ai/mcp@latest",
-        "--api-key=YOUR_TOKEN_METRICS_API_KEY"
-      ]
+      "args": ["-y", "@token-metrics-ai/mcp@latest"],
+      "env": {
+        "TOKEN_METRICS_API_KEY": "YOUR_API_KEY"
+      }
     }
   }
 }
-```
-
-### VS Code/Cursor
-
-1. Install the MCP extension for VS Code/Cursor
-2. Add the Token Metrics MCP server to your configuration:
-
-```json
-{
-  "mcp.servers": {
-    "token-metrics": {
-      "command": "npx",
-      "args": ["-y", "@token-metrics-ai/mcp@latest", "--api-key=YOUR_API_KEY"]
-    }
-  }
-}
-```
-
-### Environment Variables
-
-For security, you can set your API key as an environment variable:
-
-```bash
-export TOKEN_METRICS_API_KEY=your_api_key_here
-```
-
-Then run without the `--api-key` argument:
-
-```bash
-npx -y @token-metrics-ai/mcp@latest
 ```
 
 ## Available Tools
@@ -169,14 +135,13 @@ You can test the server using the MCP Inspector:
 npm run build
 
 # Run with MCP Inspector
-npx @modelcontextprotocol/inspector node build/src/cli.js --api-key=YOUR_API_KEY
+npx @modelcontextprotocol/inspector node build/src/cli.js
 ```
 
 ## Configuration
 
 The server accepts the following configuration options:
 
-- `--api-key` - Your Token Metrics API key
 - `--help` - Show help information
 
 Environment variables:

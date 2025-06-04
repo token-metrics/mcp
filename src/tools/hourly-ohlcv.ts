@@ -22,7 +22,6 @@ interface HourlyOHLCVInput {
   endDate?: string;
   limit?: number;
   page?: number;
-  api_key?: string;
 }
 
 export class HourlyOHLCVTool extends BaseApiTool {
@@ -68,11 +67,6 @@ export class HourlyOHLCVTool extends BaseApiTool {
             description:
               "Enables pagination and data retrieval control by skipping a specified number of items before fetching data. Page should be a non-negative integer, with 1 indicating the beginning of the dataset.",
           },
-          api_key: {
-            type: "string",
-            description:
-              "Your Token Metrics API key (required if not set as environment variable)",
-          },
         },
         required: [],
       },
@@ -82,13 +76,12 @@ export class HourlyOHLCVTool extends BaseApiTool {
   protected async performApiRequest(
     input: HourlyOHLCVInput,
   ): Promise<TokenMetricsResponse> {
-    const activeApiKey = this.validateApiKey(input.api_key);
+    this.validateApiKey();
     const params = this.buildParams(input);
 
     return (await this.makeApiRequest(
       "/hourly-ohlcv",
       params,
-      activeApiKey,
     )) as TokenMetricsResponse;
   }
 }

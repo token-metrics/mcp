@@ -48,30 +48,27 @@ export abstract class BaseApiTool implements BaseTool {
     input: any,
   ): Promise<TokenMetricsBaseResponse>;
 
-  protected validateApiKey(providedApiKey?: string): string {
-    const activeApiKey = providedApiKey || this.apiKey;
-
-    if (!activeApiKey) {
+  protected validateApiKey(): string {
+    if (!this.apiKey) {
       const errorMsg =
-        "API key is required. Either provide it as a parameter or set the TOKEN_METRICS_API_KEY environment variable.";
+        "API key is required. Provide it as TOKEN_METRICS_API_KEY environment variable.";
       console.error(`[ERROR] ${errorMsg}`);
       throw new Error(errorMsg);
     }
 
-    return activeApiKey;
+    return this.apiKey;
   }
 
   protected async makeApiRequest(
     endpoint: string,
     params: Record<string, string | number>,
-    activeApiKey: string,
   ): Promise<TokenMetricsBaseResponse> {
     try {
       const response = await axios.get(`${this.apiBaseUrl}${endpoint}`, {
         params,
         headers: {
           Accept: "application/json",
-          "x-api-key": activeApiKey,
+          "x-api-key": this.apiKey,
         },
         timeout: 30000,
       });
@@ -103,7 +100,7 @@ export abstract class BaseApiTool implements BaseTool {
 
   protected buildParams(
     input: Record<string, any>,
-    excludeKeys: string[] = ["api_key"],
+    excludeKeys: string[] = [],
   ): Record<string, string | number> {
     const params: Record<string, string | number> = {};
 
