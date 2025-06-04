@@ -77,6 +77,12 @@ The Token Metrics MCP server provides the following tools:
 - `get_crypto_investors` - Crypto investor information
 - `get_top_tokens_by_market_cap` - Top tokens by market cap
 
+### Indices & Portfolio
+
+- `get_indices` - Fetch active and passive crypto indices
+- `get_indices_performance` - Historical performance data for indices
+- `get_indices_holdings` - Current holdings and weights for indices
+
 ## Getting Your API Key
 
 1. Visit [Token Metrics](https://app.tokenmetrics.com/en)

@@ -35,7 +35,11 @@
       "Get scenario analysis for BTC price predictions",
       "Fetch market sentiment data for the past week",
       "Get top 20 tokens by market cap",
-      "Show me the highest market cap cryptocurrencies"
+      "Show me the highest market cap cryptocurrencies",
+      "Get all available crypto indices",
+      "Fetch active indices with limit 20",
+      "Get performance data for index ID 1",
+      "Show holdings for index ID 1"
     ],
     "_centralized_queries": [
       "Get BTC data with API key: your-key",
@@ -219,6 +223,30 @@
           "exchange": "Comma-separated exchanges",
           "limit": "Number of results (max: 100)",
           "page": "Page number for pagination"
+        }
+      },
+      "get_indices": {
+        "description": "Fetch active and passive crypto indices with performance and market data",
+        "parameters": {
+          "indicesType": "Filter to return indices by type: 'active' for actively managed, 'passive' for passively managed",
+          "limit": "Number of results (max: 100)",
+          "page": "Page number for pagination"
+        }
+      },
+      "get_indices_performance": {
+        "description": "Fetch historical performance data for a given index, including cumulative return on investment (ROI) over time",
+        "parameters": {
+          "id": "Id of the index (e.g., '1') - REQUIRED",
+          "startDate": "Start date (YYYY-MM-DD format)",
+          "endDate": "End date (YYYY-MM-DD format)",
+          "limit": "Number of results (max: 100)",
+          "page": "Page number for pagination"
+        }
+      },
+      "get_indices_holdings": {
+        "description": "Fetch the current holdings of the given Index, along with their respective weight in percentage",
+        "parameters": {
+          "id": "Id of the index (e.g., '1') - REQUIRED"
         }
       }
     }

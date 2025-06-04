@@ -15,6 +15,9 @@ import { SentimentTool } from "./sentiment.js";
 import { QuantMetricsTool } from "./quant-metrics.js";
 import { ScenarioAnalysisTool } from "./scenario-analysis.js";
 import { CorrelationTool } from "./correlation.js";
+import { IndicesTool } from "./indices.js";
+import { IndicesHoldingsTool } from "./indices-holdings.js";
+import { IndicesPerformanceTool } from "./indices-performance.js";
 
 // Registry of all available tools
 export const AVAILABLE_TOOLS: BaseTool[] = [
@@ -34,6 +37,9 @@ export const AVAILABLE_TOOLS: BaseTool[] = [
   new QuantMetricsTool(),
   new ScenarioAnalysisTool(),
   new CorrelationTool(),
+  new IndicesTool(),
+  new IndicesHoldingsTool(),
+  new IndicesPerformanceTool(),
 ];
 
 // Export tool classes for individual use
@@ -54,5 +60,8 @@ export {
   QuantMetricsTool,
   ScenarioAnalysisTool,
   CorrelationTool,
+  IndicesTool,
+  IndicesHoldingsTool,
+  IndicesPerformanceTool,
 };
 export { BaseTool, ToolResponse } from "./types.js";
