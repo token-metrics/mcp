@@ -55,6 +55,6 @@ export class TokenMetricsMCPServer {
     const transport = new StdioServerTransport();
     await this.server.connect(transport);
 
-    console.log("Token Metrics MCP Server running on stdio");
+    console.error("Token Metrics MCP Server running on stdio");
   }
 }
