@@ -15,6 +15,14 @@ The Token Metrics Model Context Protocol (MCP) server provides comprehensive cry
 
 ## Quick Start
 
+### Installing via Smithery
+
+To install Token Metrics MCP Server for Claude Desktop automatically via [Smithery](https://smithery.ai/server/@token-metrics/mcp):
+
+```bash
+npx -y @smithery/cli install @token-metrics/mcp --client claude
+```
+
 ### Using npx (Recommended)
 
 The easiest way to get started is using npx:
