@@ -25,6 +25,14 @@ export TOKEN_METRICS_API_KEY=your_api_key_here
 npx -y @token-metrics-ai/mcp@latest
 ```
 
+## MCP Listings
+
+You can find the Token Metrics MCP server on these popular MCP listing sites:
+
+- **Smithery**: [https://smithery.ai/server/@token-metrics/mcp](https://smithery.ai/server/@token-metrics/mcp)
+- **Glama AI**: [https://glama.ai/mcp/servers/@token-metrics/mcp](https://glama.ai/mcp/servers/@token-metrics/mcp)
+- **MCP.so**: [https://mcp.so/server/mcp/token-metrics](https://mcp.so/server/mcp/token-metrics)
+
 ## Setup with AI Clients
 
 ### Claude Desktop or VS Code/Cursor
