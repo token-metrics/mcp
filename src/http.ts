@@ -55,6 +55,15 @@ export class TokenMetricsHTTPServer {
   }
 
   private setupRoutes(): void {
+    this.app.get("/health", (req, res) => {
+      return res.status(200).json({
+        status: "healthy",
+        timestamp: new Date().toISOString(),
+        version: "1.2.0",
+        service: "Token Metrics MCP Server",
+      });
+    });
+
     this.app.post("/", this.handleMCPRequest.bind(this));
 
     this.app.use("*", (req, res) => {
