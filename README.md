@@ -15,15 +15,51 @@ The Token Metrics Model Context Protocol (MCP) server provides comprehensive cry
 
 ## Quick Start
 
-### Using npx (Recommended)
+### Option 1: HTTP Transport
 
-The easiest way to get started is using npx:
+The easiest way to get started is using our hosted HTTP transport - no installation required:
+
+```json
+{
+  "mcpServers": {
+    "token-metrics": {
+      "url": "https://mcp.tokenmetrics.com",
+      "headers": {
+        "x-api-key": "YOUR_API_KEY"
+      }
+    }
+  }
+}
+```
+
+### Option 2: Using npx (Local Installation)
 
 ```bash
 # Set environment variable and run
 export TOKEN_METRICS_API_KEY=your_api_key_here
 npx -y @token-metrics-ai/mcp@latest
 ```
+
+## Connection Methods
+
+### HTTP Transport (Hosted)
+
+- **URL**: `https://mcp.tokenmetrics.com`
+- **Authentication**: Use `x-api-key` header with your Token Metrics API key
+- **Benefits**:
+  - No local installation required
+  - Always up-to-date
+  - Better performance and reliability
+  - Automatic scaling
+- **Usage**: Perfect for production environments and users who prefer not to install packages locally
+
+### Local Installation (npx/npm)
+
+- **Benefits**:
+  - Full control over the server instance
+  - Works offline (after installation)
+  - Can modify and extend functionality
+- **Usage**: Ideal for development, testing, or custom implementations
 
 ## MCP Listings
 
@@ -32,10 +68,30 @@ You can find the Token Metrics MCP server on these popular MCP listing sites:
 - **Smithery**: [https://smithery.ai/server/@token-metrics/mcp](https://smithery.ai/server/@token-metrics/mcp)
 - **Glama AI**: [https://glama.ai/mcp/servers/@token-metrics/mcp](https://glama.ai/mcp/servers/@token-metrics/mcp)
 - **MCP.so**: [https://mcp.so/server/mcp/token-metrics](https://mcp.so/server/mcp/token-metrics)
+- **Awesome MCP Servers**: [https://mcpservers.org/servers/token-metrics/mcp](https://mcpservers.org/servers/token-metrics/mcp)
 
 ## Setup with AI Clients
 
 ### Claude Desktop or VS Code/Cursor
+
+#### HTTP Transport Configuration
+
+Add the following to your `claude_desktop_config.json` or `mcp.json`:
+
+```json
+{
+  "mcpServers": {
+    "token-metrics": {
+      "url": "https://mcp.tokenmetrics.com",
+      "headers": {
+        "x-api-key": "YOUR_API_KEY"
+      }
+    }
+  }
+}
+```
+
+#### Local Installation Configuration
 
 Add the following to your `claude_desktop_config.json` or `mcp.json`:
 
@@ -142,7 +198,7 @@ npm run build
 
 ### Testing with MCP Inspector
 
-You can test the server using the MCP Inspector:
+You can test the local server using the MCP Inspector:
 
 ```bash
 # Build the server first
@@ -154,7 +210,22 @@ npx @modelcontextprotocol/inspector node build/src/cli.js
 
 ## Configuration
 
-The server accepts the following configuration options:
+### HTTP Transport Configuration
+
+When using the hosted HTTP transport at `https://mcp.tokenmetrics.com`, the server accepts:
+
+**Headers:**
+
+- `x-api-key` - Your Token Metrics API key (required)
+- `Content-Type: application/json` (for requests)
+
+**Supported Endpoints:**
+
+- `POST /` - Main MCP JSON-RPC endpoint
+
+### Local Server Configuration
+
+The local server accepts the following configuration options:
 
 - `--help` - Show help information
 

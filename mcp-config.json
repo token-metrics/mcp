@@ -1,4 +1,25 @@
 {
+  "_http_transport": {
+    "_comment": "HTTP Transport - Hosted",
+    "token-metrics": {
+      "url": "https://mcp.tokenmetrics.com",
+      "headers": {
+        "x-api-key": "YOUR_API_KEY"
+      }
+    }
+  },
+
+  "_local_installation": {
+    "_comment": "Local Installation using npx",
+    "token-metrics": {
+      "command": "npx",
+      "args": ["-y", "@token-metrics-ai/mcp@latest"],
+      "env": {
+        "TOKEN_METRICS_API_KEY": "YOUR_API_KEY"
+      }
+    }
+  },
+
   "_direct": {
     "token-metrics": {
       "command": "npx",
