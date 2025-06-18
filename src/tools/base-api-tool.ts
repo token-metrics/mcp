@@ -12,8 +12,8 @@ export abstract class BaseApiTool implements BaseTool {
   protected readonly apiBaseUrl = "https://api.tokenmetrics.com/v2";
   protected readonly apiKey: string;
 
-  constructor() {
-    this.apiKey = process.env.TOKEN_METRICS_API_KEY || "";
+  constructor(apiKey?: string) {
+    this.apiKey = apiKey || process.env.TOKEN_METRICS_API_KEY || "";
   }
 
   abstract getToolDefinition(): any;

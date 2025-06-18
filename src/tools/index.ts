@@ -18,9 +18,15 @@ import { CorrelationTool } from "./correlation.js";
 import { IndicesTool } from "./indices.js";
 import { IndicesHoldingsTool } from "./indices-holdings.js";
 import { IndicesPerformanceTool } from "./indices-performance.js";
+import { SearchTool } from "./search.js";
+import { FetchTool } from "./fetch.js";
 
 // Registry of all available tools
 export const AVAILABLE_TOOLS: BaseTool[] = [
+  // OpenAI ChatGPT Connector Required Tools
+  new SearchTool(),
+  new FetchTool(),
+  // Original Token Metrics Tools
   new TokenDataTool(),
   new PriceTool(),
   new TokenTraderGradeTool(),
@@ -44,6 +50,8 @@ export const AVAILABLE_TOOLS: BaseTool[] = [
 
 // Export tool classes for individual use
 export {
+  SearchTool,
+  FetchTool,
   TokenDataTool,
   PriceTool,
   TokenTraderGradeTool,
