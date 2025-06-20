@@ -205,7 +205,7 @@ indices-performance – GET /v2/indices-performance - The Indices Performance en
     
    blockchain_address — Search via on‑chain address. Format <chain-name>:<contract-address>, e.g. binance-smart-chain:0x57185….
     
-   startDate / endDate — Filter by date range (YYYY‑MM‑DD).
+   startDate / endDate — Filter by date range (YYYY‑MM‑DD). Some data might not be updated frequently, you can either get yesterday's data or leave these fields blank to get the latest data.
     
    marketcap, volume, fdv — Numeric lower‑bound thresholds in USD.
     
