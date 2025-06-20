@@ -2,15 +2,6 @@ import { Tool } from "@modelcontextprotocol/sdk/types.js";
 import { BaseApiTool, TokenMetricsBaseResponse } from "./base-api-tool.js";
 import search from "../utils/search.js";
 
-interface SearchResult {
-  type: string;
-  text: string;
-}
-
-interface SearchResponse {
-  content: SearchResult[];
-}
-
 interface SearchInput {
   query: string;
 }
@@ -105,34 +96,77 @@ export class SearchTool extends BaseApiTool {
       throw new Error("empty query string");
     }
 
-    const parts = q.split(/\s+/);
-    let endpointKey: string;
-    let tokens: string[];
+    const tokens = this.parseTokens(q);
 
-    if (parts[0].startsWith("endpoint:")) {
-      const colonIndex = parts[0].indexOf(":");
-      endpointKey = parts[0].substring(colonIndex + 1);
-      tokens = parts.slice(1);
+    let endpointKey: string;
+    let paramTokens: string[];
+
+    if (tokens[0].startsWith("endpoint:")) {
+      const colonIndex = tokens[0].indexOf(":");
+      endpointKey = tokens[0].substring(colonIndex + 1);
+      paramTokens = tokens.slice(1);
     } else {
       endpointKey = "tokens";
-      tokens = parts;
+      paramTokens = tokens;
     }
 
     if (!(endpointKey in search.endpointsData))
       throw new Error(`unknown endpoint '${endpointKey}'`);
 
     const params: Record<string, string> = {};
-    for (const tok of tokens) {
+    for (const tok of paramTokens) {
       if (!tok.includes(":"))
         throw new Error(`malformed token '${tok}' – expected field:value`);
 
       const colonIndex = tok.indexOf(":");
       const field = tok.substring(0, colonIndex);
-      const value = tok.substring(colonIndex + 1);
+      let value = tok.substring(colonIndex + 1);
+
+      if (
+        (value.startsWith('"') && value.endsWith('"')) ||
+        (value.startsWith("'") && value.endsWith("'"))
+      ) {
+        value = value.slice(1, -1);
+      }
+
       params[field] = value;
     }
 
     return { endpoint: endpointKey, params };
+  }
+
+  private parseTokens(query: string): string[] {
+    const tokens: string[] = [];
+    let current = "";
+    let inQuotes = false;
+    let quoteChar = "";
+
+    for (let i = 0; i < query.length; i++) {
+      const char = query[i];
+
+      if (!inQuotes && (char === '"' || char === "'")) {
+        inQuotes = true;
+        quoteChar = char;
+        current += char;
+      } else if (inQuotes && char === quoteChar) {
+        inQuotes = false;
+        current += char;
+        quoteChar = "";
+      } else if (!inQuotes && /\s/.test(char)) {
+        if (current.trim()) {
+          tokens.push(current.trim());
+          current = "";
+        }
+      } else {
+        current += char;
+      }
+    }
+
+    if (current.trim()) tokens.push(current.trim());
+
+    if (inQuotes) throw new Error(`Unclosed quote in query: ${query}`);
+
+    return tokens;
   }
 
   protected async performApiRequest(
