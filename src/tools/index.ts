@@ -20,6 +20,7 @@ import { IndicesHoldingsTool } from "./indices-holdings.js";
 import { IndicesPerformanceTool } from "./indices-performance.js";
 import { SearchTool } from "./search.js";
 import { FetchTool } from "./fetch.js";
+import { TokenHourlyTradingSignalTool } from "./hourly-trading-signals.js";
 
 // Registry of all available tools
 export const AVAILABLE_TOOLS: BaseTool[] = [
@@ -46,6 +47,7 @@ export const AVAILABLE_TOOLS: BaseTool[] = [
   new IndicesTool(),
   new IndicesHoldingsTool(),
   new IndicesPerformanceTool(),
+  new TokenHourlyTradingSignalTool(),
 ];
 
 // Export tool classes for individual use
@@ -71,5 +73,6 @@ export {
   IndicesTool,
   IndicesHoldingsTool,
   IndicesPerformanceTool,
+  TokenHourlyTradingSignalTool,
 };
 export { BaseTool, ToolResponse } from "./types.js";

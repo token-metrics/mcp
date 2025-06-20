@@ -1,32 +1,73 @@
 import express, { Request, Response } from "express";
 import cors from "cors";
+import { randomUUID } from "node:crypto";
+import { Server } from "@modelcontextprotocol/sdk/server/index.js";
+import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
+import {
+  CallToolRequestSchema,
+  ListToolsRequestSchema,
+  CallToolRequest,
+} from "@modelcontextprotocol/sdk/types.js";
 import { AVAILABLE_TOOLS } from "./tools/index.js";
 
-interface JSONRPCRequest {
-  jsonrpc: string;
-  method: string;
-  params?: any;
-  id: string | number | null;
-}
-
-interface JSONRPCResponse {
-  jsonrpc: string;
-  id: string | number | null;
-  result?: any;
-  error?: {
-    code: number;
-    message: string;
-    data?: any;
-  };
-}
-
 interface MCPRequest extends Request {
-  body: JSONRPCRequest;
+  body: any;
 }
+
+function isInitializeRequest(request: any): boolean {
+  return request && request.method === "initialize";
+}
+
+const getServer = (apiKey?: string) => {
+  const server = new Server(
+    {
+      name: "Token Metrics MCP Server",
+      version: "1.2.0",
+    },
+    {
+      capabilities: {
+        tools: {},
+      },
+    },
+  );
+
+  server.setRequestHandler(ListToolsRequestSchema, async () => {
+    return {
+      tools: AVAILABLE_TOOLS.map((tool) => tool.getToolDefinition()),
+    };
+  });
+
+  server.setRequestHandler(
+    CallToolRequestSchema,
+    async (request: CallToolRequest) => {
+      if (!apiKey)
+        throw new Error("API key required. Please provide x-api-key header.");
+
+      const { name, arguments: args } = request.params;
+
+      const tool = AVAILABLE_TOOLS.find(
+        (t) => t.getToolDefinition().name === name,
+      );
+
+      if (!tool) {
+        throw new Error(`Unknown tool: ${name}`);
+      }
+
+      const toolClass = Object.getPrototypeOf(tool).constructor;
+      const toolInstance = new toolClass(apiKey);
+
+      return await toolInstance.execute(args || {});
+    },
+  );
+
+  return server;
+};
 
 export class TokenMetricsHTTPServer {
   private app: express.Application;
   private port: number;
+  private transports: { [sessionId: string]: StreamableHTTPServerTransport } =
+    {};
 
   constructor(port: number = 3000) {
     this.port = port;
@@ -66,6 +107,8 @@ export class TokenMetricsHTTPServer {
 
     this.app.post("/", this.handleMCPRequest.bind(this));
 
+    this.app.get("/", this.handleMCPGetRequest.bind(this));
+
     this.app.use("*", (req, res) => {
       res.status(404).json({ error: "Endpoint not found" });
     });
@@ -75,8 +118,9 @@ export class TokenMetricsHTTPServer {
     req: MCPRequest,
     res: Response,
   ): Promise<void> {
+    console.log("Received MCP request:", req.body);
+
     try {
-      // Prevent DNS rebinding attacks
       if (!this.isValidRequest(req)) {
         res.status(403).json({
           error: "Invalid request - potential DNS rebinding attack",
@@ -85,170 +129,105 @@ export class TokenMetricsHTTPServer {
         return;
       }
 
-      const jsonrpcRequest = req.body;
+      const sessionId = req.headers["mcp-session-id"] as string | undefined;
+      let transport: StreamableHTTPServerTransport;
 
-      if (!this.isValidJSONRPCRequest(jsonrpcRequest)) {
+      if (sessionId && this.transports[sessionId]) {
+        transport = this.transports[sessionId];
+      } else if (!sessionId && isInitializeRequest(req.body)) {
+        const apiKey = req.get("x-api-key");
+
+        transport = new StreamableHTTPServerTransport({
+          sessionIdGenerator: () => randomUUID(),
+          enableJsonResponse: true,
+          onsessioninitialized: (sessionId) => {
+            console.log(`Session initialized with ID: ${sessionId}`);
+            this.transports[sessionId] = transport;
+          },
+        });
+
+        transport.onclose = () => {
+          if (transport.sessionId) {
+            delete this.transports[transport.sessionId];
+          }
+        };
+
+        const server = getServer(apiKey);
+        await server.connect(transport);
+        await transport.handleRequest(req, res, req.body);
+        return;
+      } else {
         res.status(400).json({
           jsonrpc: "2.0",
           error: {
-            code: -32600,
-            message: "Invalid JSON-RPC request",
+            code: -32000,
+            message: "Bad Request: No valid session ID provided",
           },
-          id: (jsonrpcRequest as any)?.id || null,
+          id: null,
         });
         return;
       }
 
-      const apiKey = req.get("x-api-key");
-
-      const response = await this.processJSONRPCRequest(jsonrpcRequest, apiKey);
-
-      const acceptHeader = req.get("Accept") || "";
-      const supportsSSE = acceptHeader.includes("text/event-stream");
-
-      if (supportsSSE && this.shouldStream(jsonrpcRequest)) {
-        res.setHeader("Content-Type", "text/event-stream");
-        res.setHeader("Cache-Control", "no-cache");
-        res.setHeader("Connection", "keep-alive");
-
-        res.write(`data: ${JSON.stringify(response)}\n\n`);
-        res.end();
-      } else {
-        res.setHeader("Content-Type", "application/json");
-        res.json(response);
-      }
-    } catch (error) {
-      console.error("Error handling MCP request:", error);
-      res.status(500).json({
-        jsonrpc: "2.0",
-        error: {
-          code: -32603,
-          message: "Internal error",
-          data: error instanceof Error ? error.message : String(error),
-        },
-        id: req.body?.id || null,
-      });
-    }
-  }
-
-  private async processJSONRPCRequest(
-    request: JSONRPCRequest,
-    apiKey: string | undefined,
-  ): Promise<JSONRPCResponse> {
-    try {
-      if (request.method === "initialize") {
-        const result = {
-          protocolVersion: "2024-11-05",
-          capabilities: {
-            tools: {},
-          },
-          serverInfo: {
-            name: "Token Metrics MCP Server",
-            version: "1.0.0",
-          },
-        };
-
-        return {
-          jsonrpc: "2.0",
-          id: request.id,
-          result,
-        };
-      } else if (request.method === "tools/list") {
-        const result = {
-          tools: AVAILABLE_TOOLS.map((tool) => tool.getToolDefinition()),
-        };
-
-        return {
-          jsonrpc: "2.0",
-          id: request.id,
-          result,
-        };
-      } else if (request.method === "tools/call") {
+      if (req.body.method === "tools/call") {
+        const apiKey = req.get("x-api-key");
         if (!apiKey) {
-          return {
+          res.status(400).json({
             jsonrpc: "2.0",
-            id: request.id,
             error: {
               code: -32600,
               message: "API key required. Please provide x-api-key header.",
             },
-          };
+            id: req.body.id || null,
+          });
+          return;
         }
-
-        const { name, arguments: args } = request.params || {};
-
-        if (!name) {
-          return {
-            jsonrpc: "2.0",
-            id: request.id,
-            error: {
-              code: -32602,
-              message: "Missing required parameter: name",
-            },
-          };
-        }
-
-        const tool = AVAILABLE_TOOLS.find(
-          (t) => t.getToolDefinition().name === name,
-        );
-
-        if (!tool) {
-          return {
-            jsonrpc: "2.0",
-            id: request.id,
-            error: {
-              code: -32601,
-              message: `Unknown tool: ${name}`,
-            },
-          };
-        }
-
-        const toolClass = Object.getPrototypeOf(tool).constructor;
-        const toolInstance = new toolClass(apiKey);
-
-        const result = await toolInstance.execute(args || {});
-
-        return {
-          jsonrpc: "2.0",
-          id: request.id,
-          result,
-        };
-      } else {
-        return {
-          jsonrpc: "2.0",
-          id: request.id,
-          error: {
-            code: -32601,
-            message: `Method not found: ${request.method}`,
-          },
-        };
       }
+
+      await transport.handleRequest(req, res, req.body);
     } catch (error) {
-      return {
-        jsonrpc: "2.0",
-        id: request.id,
-        error: {
-          code: -32603,
-          message: error instanceof Error ? error.message : "Internal error",
-        },
-      };
+      console.error("Error handling MCP request:", error);
+      if (!res.headersSent) {
+        res.status(500).json({
+          jsonrpc: "2.0",
+          error: {
+            code: -32603,
+            message: "Internal server error",
+          },
+          id: req.body?.id || null,
+        });
+      }
     }
   }
 
-  private isValidJSONRPCRequest(obj: any): obj is JSONRPCRequest {
-    return (
-      obj &&
-      typeof obj === "object" &&
-      obj.jsonrpc === "2.0" &&
-      typeof obj.method === "string" &&
-      (obj.id === null ||
-        typeof obj.id === "string" ||
-        typeof obj.id === "number")
-    );
-  }
+  private async handleMCPGetRequest(
+    req: Request,
+    res: Response,
+  ): Promise<void> {
+    try {
+      if (!this.isValidRequest(req)) {
+        res.status(403).json({
+          error: "Invalid request - potential DNS rebinding attack",
+        });
+        return;
+      }
 
-  private shouldStream(request: JSONRPCRequest): boolean {
-    return request.method === "tools/call";
+      const sessionId = req.headers["mcp-session-id"] as string | undefined;
+      if (!sessionId || !this.transports[sessionId]) {
+        res.status(405).set("Allow", "POST").send("Method Not Allowed");
+        return;
+      }
+
+      console.log(`Establishing SSE stream for session ${sessionId}`);
+      const transport = this.transports[sessionId];
+      await transport.handleRequest(req, res);
+    } catch (error) {
+      console.error("Error handling MCP GET request:", error);
+      if (!res.headersSent) {
+        res.status(500).json({
+          error: "Internal server error",
+        });
+      }
+    }
   }
 
   private isValidRequest(req: Request): boolean {
@@ -353,7 +332,7 @@ export class TokenMetricsHTTPServer {
     return new Promise((resolve) => {
       this.app.listen(this.port, "0.0.0.0", () => {
         console.error(
-          `Token Metrics MCP HTTP Server running on http://0.0.0.0:${this.port}`,
+          `Token Metrics MCP HTTP Server running on port: ${this.port}`,
         );
         resolve();
       });
@@ -365,6 +344,11 @@ async function main(): Promise<void> {
   const server = new TokenMetricsHTTPServer();
   await server.start();
 }
+
+process.on("SIGINT", async () => {
+  console.log("Shutting down server...");
+  process.exit(0);
+});
 
 main().catch((error: unknown) => {
   console.error(
