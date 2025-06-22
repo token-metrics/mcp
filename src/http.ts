@@ -22,7 +22,7 @@ const getServer = (apiKey?: string) => {
   const server = new Server(
     {
       name: "Token Metrics MCP Server",
-      version: "1.2.3",
+      version: "1.2.4",
     },
     {
       capabilities: {
@@ -100,7 +100,7 @@ export class TokenMetricsHTTPServer {
       return res.status(200).json({
         status: "healthy",
         timestamp: new Date().toISOString(),
-        version: "1.2.3",
+        version: "1.2.4",
         service: "Token Metrics MCP Server",
       });
     });
@@ -129,13 +129,13 @@ export class TokenMetricsHTTPServer {
         return;
       }
 
-      const sessionId = req.headers["mcp-session-id"] as string | undefined;
+      const sessionId = req.get("mcp-session-id");
       let transport: StreamableHTTPServerTransport;
 
       if (sessionId && this.transports[sessionId]) {
         transport = this.transports[sessionId];
       } else if (!sessionId && isInitializeRequest(req.body)) {
-        const apiKey = req.get("x-api-key");
+        const apiKey = req.get("x-api-key") || (req.query.apiKey as string);
 
         transport = new StreamableHTTPServerTransport({
           sessionIdGenerator: () => randomUUID(),
@@ -169,7 +169,7 @@ export class TokenMetricsHTTPServer {
       }
 
       if (req.body.method === "tools/call") {
-        const apiKey = req.get("x-api-key");
+        const apiKey = req.get("x-api-key") || req.query.apiKey;
         if (!apiKey) {
           res.status(400).json({
             jsonrpc: "2.0",
@@ -211,7 +211,7 @@ export class TokenMetricsHTTPServer {
         return;
       }
 
-      const sessionId = req.headers["mcp-session-id"] as string | undefined;
+      const sessionId = req.get("mcp-session-id");
       if (!sessionId || !this.transports[sessionId]) {
         res.status(405).set("Allow", "POST").send("Method Not Allowed");
         return;
