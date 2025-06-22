@@ -3,6 +3,7 @@ import cors from "cors";
 import { randomUUID } from "node:crypto";
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
+import { SSEServerTransport } from "@modelcontextprotocol/sdk/server/sse.js";
 import {
   CallToolRequestSchema,
   ListToolsRequestSchema,
@@ -22,7 +23,7 @@ const getServer = (apiKey?: string) => {
   const server = new Server(
     {
       name: "Token Metrics MCP Server",
-      version: "1.2.4",
+      version: "1.3.0",
     },
     {
       capabilities: {
@@ -66,8 +67,9 @@ const getServer = (apiKey?: string) => {
 export class TokenMetricsHTTPServer {
   private app: express.Application;
   private port: number;
-  private transports: { [sessionId: string]: StreamableHTTPServerTransport } =
-    {};
+  private transports: {
+    [sessionId: string]: StreamableHTTPServerTransport | SSEServerTransport;
+  } = {};
 
   constructor(port: number = 3000) {
     this.port = port;
@@ -100,7 +102,7 @@ export class TokenMetricsHTTPServer {
       return res.status(200).json({
         status: "healthy",
         timestamp: new Date().toISOString(),
-        version: "1.2.4",
+        version: "1.3.0",
         service: "Token Metrics MCP Server",
       });
     });
@@ -108,6 +110,48 @@ export class TokenMetricsHTTPServer {
     this.app.post("/", this.handleMCPRequest.bind(this));
 
     this.app.get("/", this.handleMCPGetRequest.bind(this));
+
+    this.app.get("/sse", async (req: Request, res: Response) => {
+      console.log("Received GET request to /sse (deprecated SSE transport)");
+      const transport = new SSEServerTransport("/messages", res);
+      this.transports[transport.sessionId] = transport;
+
+      res.on("close", () => {
+        delete this.transports[transport.sessionId];
+      });
+
+      const apiKey = req.get("x-api-key") || (req.query.apiKey as string);
+      const server = getServer(apiKey);
+      await server.connect(transport);
+    });
+
+    this.app.post("/messages", async (req: Request, res: Response) => {
+      const sessionId = req.query.sessionId as string;
+      let transport: SSEServerTransport;
+      const existingTransport = this.transports[sessionId];
+      if (existingTransport instanceof SSEServerTransport) {
+        // Reuse existing transport
+        transport = existingTransport;
+      } else {
+        // Transport exists but is not a SSEServerTransport (could be StreamableHTTPServerTransport)
+        res.status(400).json({
+          jsonrpc: "2.0",
+          error: {
+            code: -32000,
+            message:
+              "Bad Request: Session exists but uses a different transport protocol",
+          },
+          id: null,
+        });
+        return;
+      }
+
+      if (transport) {
+        await transport.handlePostMessage(req, res, req.body);
+      } else {
+        res.status(400).send("No transport found for sessionId");
+      }
+    });
 
     this.app.use("*", (req, res) => {
       res.status(404).json({ error: "Endpoint not found" });
@@ -133,10 +177,8 @@ export class TokenMetricsHTTPServer {
       let transport: StreamableHTTPServerTransport;
 
       if (sessionId && this.transports[sessionId]) {
-        transport = this.transports[sessionId];
+        transport = this.transports[sessionId] as StreamableHTTPServerTransport;
       } else if (!sessionId && isInitializeRequest(req.body)) {
-        const apiKey = req.get("x-api-key") || (req.query.apiKey as string);
-
         transport = new StreamableHTTPServerTransport({
           sessionIdGenerator: () => randomUUID(),
           enableJsonResponse: true,
@@ -152,6 +194,7 @@ export class TokenMetricsHTTPServer {
           }
         };
 
+        const apiKey = req.get("x-api-key") || (req.query.apiKey as string);
         const server = getServer(apiKey);
         await server.connect(transport);
         await transport.handleRequest(req, res, req.body);
@@ -218,7 +261,9 @@ export class TokenMetricsHTTPServer {
       }
 
       console.log(`Establishing SSE stream for session ${sessionId}`);
-      const transport = this.transports[sessionId];
+      const transport = this.transports[
+        sessionId
+      ] as StreamableHTTPServerTransport;
       await transport.handleRequest(req, res);
     } catch (error) {
       console.error("Error handling MCP GET request:", error);
