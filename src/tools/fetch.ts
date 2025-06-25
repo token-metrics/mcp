@@ -21,6 +21,36 @@ export class FetchTool extends BaseApiTool {
         },
         required: ["token_id"],
       },
+      // outputSchema: {
+      //   type: "object",
+      //   properties: {
+      //     id: {
+      //       type: "string",
+      //       description: "ID of the resource.",
+      //     },
+      //     title: {
+      //       type: "string",
+      //       description: "Title or headline of the fetched resource.",
+      //     },
+      //     text: {
+      //       type: "string",
+      //       description: "Complete textual content of the resource.",
+      //     },
+      //     url: {
+      //       type: ["string", "null"],
+      //       description:
+      //         "URL of the resource. Optional but needed for citations to work.",
+      //     },
+      //     metadata: {
+      //       type: ["object", "null"],
+      //       additionalProperties: {
+      //         type: "string",
+      //       },
+      //       description: "Optional metadata providing additional context.",
+      //     },
+      //   },
+      //   required: ["id", "title", "text"],
+      // },
     } as Tool;
   }
 

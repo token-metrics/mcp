@@ -111,8 +111,15 @@ export class TokenMetricsHTTPServer {
 
     this.app.get("/", this.handleMCPGetRequest.bind(this));
 
-    this.app.get("/sse", async (req: Request, res: Response) => {
-      console.log("Received GET request to /sse (deprecated SSE transport)");
+    this.app.all("/sse", async (req: Request, res: Response) => {
+      if (!["GET", "POST"].includes(req.method)) {
+        res.status(405).send("Method Not Allowed");
+        return;
+      }
+
+      console.log(
+        `Received ${req.method} request to /sse (deprecated SSE transport)`,
+      );
       const transport = new SSEServerTransport("/messages", res);
       this.transports[transport.sessionId] = transport;
 
@@ -375,7 +382,7 @@ export class TokenMetricsHTTPServer {
 
   public async start(): Promise<void> {
     return new Promise((resolve) => {
-      this.app.listen(this.port, "0.0.0.0", () => {
+      this.app.listen(this.port, "127.0.0.1", () => {
         console.error(
           `Token Metrics MCP HTTP Server running on port: ${this.port}`,
         );
