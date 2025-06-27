@@ -131,7 +131,6 @@ export class TokenMetricsHTTPServer {
     this.app.get("/", this.handleMCPGetRequest.bind(this));
 
     this.app.all("/sse", async (req: Request, res: Response) => {
-      // Handle CORS preflight requests
       if (req.method === "OPTIONS") {
         res.setHeader("Access-Control-Allow-Origin", req.get("Origin") || "*");
         res.setHeader("Access-Control-Allow-Credentials", "true");
@@ -150,7 +149,6 @@ export class TokenMetricsHTTPServer {
         return;
       }
 
-      // Add request validation like other endpoints
       if (!this.isValidRequest(req)) {
         console.log("SSE request blocked - potential DNS rebinding attack", {
           host: req.get("Host"),
@@ -176,14 +174,13 @@ export class TokenMetricsHTTPServer {
       try {
         console.log("Setting up SSE transport...");
 
-        // Set some CORS headers early, but let the transport handle the SSE headers
         res.setHeader("Access-Control-Allow-Origin", req.get("Origin") || "*");
         res.setHeader("Access-Control-Allow-Credentials", "true");
         res.setHeader(
           "Access-Control-Allow-Headers",
           "Content-Type, x-api-key, Authorization",
         );
-        res.setHeader("X-Accel-Buffering", "no"); // Disable nginx buffering
+        res.setHeader("X-Accel-Buffering", "no");
 
         console.log("Creating SSE transport...");
         const transport = new SSEServerTransport("/messages", res);
@@ -201,11 +198,10 @@ export class TokenMetricsHTTPServer {
         await server.connect(transport);
         console.log("SSE connection established successfully");
 
-        // Set up keep-alive ping after connection is established
         const pingInterval = setInterval(() => {
           if (!res.destroyed) {
             try {
-              res.write(": ping\n\n"); // SSE comment (ping)
+              res.write(": ping\n\n");
             } catch (error) {
               console.error("Error sending ping:", error);
               clearInterval(pingInterval);
@@ -213,9 +209,8 @@ export class TokenMetricsHTTPServer {
           } else {
             clearInterval(pingInterval);
           }
-        }, 30000); // Ping every 30 seconds
+        }, 30000);
 
-        // Set up event listeners after connection is established
         res.on("close", () => {
           console.log(
             `SSE connection closed for session: ${transport.sessionId}`,
@@ -245,7 +240,6 @@ export class TokenMetricsHTTPServer {
             message: error instanceof Error ? error.message : String(error),
           });
         } else {
-          // If headers already sent, try to send error through SSE
           try {
             res.write("event: error\n");
             res.write(
@@ -268,7 +262,6 @@ export class TokenMetricsHTTPServer {
         headers: req.headers,
       });
 
-      // Add request validation
       if (!this.isValidRequest(req)) {
         console.log(
           "/messages request blocked - potential DNS rebinding attack",
