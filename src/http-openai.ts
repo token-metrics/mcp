@@ -173,48 +173,166 @@ export class TokenMetricsHTTPServer {
         },
       );
 
-      // Set CORS headers explicitly for SSE
-      res.setHeader("Access-Control-Allow-Origin", req.get("Origin") || "*");
-      res.setHeader("Access-Control-Allow-Credentials", "true");
-      res.setHeader(
-        "Access-Control-Allow-Headers",
-        "Content-Type, x-api-key, Authorization",
-      );
-
       try {
+        console.log("Setting up SSE headers...");
+
+        // Set SSE-specific headers first
+        res.writeHead(200, {
+          "Content-Type": "text/event-stream",
+          "Cache-Control": "no-cache, no-store, must-revalidate",
+          Pragma: "no-cache",
+          Expires: "0",
+          Connection: "keep-alive",
+          "X-Accel-Buffering": "no", // Disable nginx buffering
+          "Access-Control-Allow-Origin": req.get("Origin") || "*",
+          "Access-Control-Allow-Credentials": "true",
+          "Access-Control-Allow-Headers":
+            "Content-Type, x-api-key, Authorization",
+        });
+
+        // Send initial data to establish connection
+        res.write("retry: 10000\n");
+        res.write("event: connected\n");
+        res.write(`data: {"sessionId": "establishing"}\n\n`);
+
+        // Flush the response to ensure headers and initial data are sent
+        try {
+          (res as any).flushHeaders?.();
+        } catch (flushError) {
+          console.log("Could not flush headers:", flushError);
+        }
+
+        console.log("Creating SSE transport...");
         const transport = new SSEServerTransport("/messages", res);
+        console.log(
+          `SSE transport created with session ID: ${transport.sessionId}`,
+        );
+
         this.transports[transport.sessionId] = transport;
+
+        // Set up keep-alive ping to prevent connection timeout
+        const pingInterval = setInterval(() => {
+          if (!res.destroyed) {
+            try {
+              res.write(": ping\n\n"); // SSE comment (ping)
+            } catch (error) {
+              console.error("Error sending ping:", error);
+              clearInterval(pingInterval);
+            }
+          } else {
+            clearInterval(pingInterval);
+          }
+        }, 30000); // Ping every 30 seconds
 
         res.on("close", () => {
           console.log(
             `SSE connection closed for session: ${transport.sessionId}`,
           );
+          clearInterval(pingInterval);
           delete this.transports[transport.sessionId];
         });
 
+        res.on("error", (error) => {
+          console.error(
+            `SSE connection error for session: ${transport.sessionId}`,
+            error,
+          );
+          clearInterval(pingInterval);
+          delete this.transports[transport.sessionId];
+        });
+
+        console.log("Getting API key and creating server...");
         const apiKey = req.get("x-api-key") || (req.query.apiKey as string);
         const server = getServer(apiKey);
+
+        console.log("Connecting server to transport...");
         await server.connect(transport);
+        console.log("SSE connection established successfully");
+
+        // Send initial connection event
+        res.write("event: connected\n");
+        res.write(`data: {"sessionId": "${transport.sessionId}"}\n\n`);
       } catch (error) {
         console.error("Error setting up SSE transport:", error);
+        console.error(
+          "Error stack:",
+          error instanceof Error ? error.stack : "No stack trace",
+        );
+
         if (!res.headersSent) {
           res.status(500).json({
             error: "Failed to establish SSE connection",
             message: error instanceof Error ? error.message : String(error),
           });
+        } else {
+          // If headers already sent, try to send error through SSE
+          try {
+            res.write("event: error\n");
+            res.write(
+              `data: {"error": "${
+                error instanceof Error ? error.message : String(error)
+              }"}\n\n`,
+            );
+            res.end();
+          } catch (writeError) {
+            console.error("Failed to write error to SSE stream:", writeError);
+          }
         }
       }
     });
 
     this.app.post("/messages", async (req: Request, res: Response) => {
+      console.log("Received POST request to /messages", {
+        sessionId: req.query.sessionId,
+        body: req.body,
+        headers: req.headers,
+      });
+
+      // Add request validation
+      if (!this.isValidRequest(req)) {
+        console.log(
+          "/messages request blocked - potential DNS rebinding attack",
+          {
+            host: req.get("Host"),
+            origin: req.get("Origin"),
+            userAgent: req.get("User-Agent"),
+          },
+        );
+        res.status(403).json({
+          error: "Invalid request - potential DNS rebinding attack",
+          code: -32600,
+        });
+        return;
+      }
+
       const sessionId = req.query.sessionId as string;
+
+      if (!sessionId) {
+        console.log("No sessionId provided in /messages request");
+        res.status(400).json({
+          jsonrpc: "2.0",
+          error: {
+            code: -32000,
+            message: "Bad Request: sessionId query parameter is required",
+          },
+          id: null,
+        });
+        return;
+      }
+
+      console.log(`Looking for transport with sessionId: ${sessionId}`);
+      console.log(`Available transports: ${Object.keys(this.transports)}`);
+
       let transport: SSEServerTransport;
       const existingTransport = this.transports[sessionId];
+
       if (existingTransport instanceof SSEServerTransport) {
-        // Reuse existing transport
+        console.log(`Found SSE transport for session: ${sessionId}`);
         transport = existingTransport;
-      } else {
-        // Transport exists but is not a SSEServerTransport (could be StreamableHTTPServerTransport)
+      } else if (existingTransport) {
+        console.log(
+          `Transport exists but wrong type for session: ${sessionId}`,
+        );
         res.status(400).json({
           jsonrpc: "2.0",
           error: {
@@ -225,12 +343,40 @@ export class TokenMetricsHTTPServer {
           id: null,
         });
         return;
+      } else {
+        console.log(`No transport found for sessionId: ${sessionId}`);
+        res.status(400).json({
+          jsonrpc: "2.0",
+          error: {
+            code: -32000,
+            message: "Bad Request: No transport found for sessionId",
+          },
+          id: null,
+        });
+        return;
       }
 
-      if (transport) {
+      try {
+        console.log(`Handling POST message for session: ${sessionId}`);
         await transport.handlePostMessage(req, res, req.body);
-      } else {
-        res.status(400).send("No transport found for sessionId");
+        console.log(
+          `Successfully handled POST message for session: ${sessionId}`,
+        );
+      } catch (error) {
+        console.error(
+          `Error handling POST message for session: ${sessionId}`,
+          error,
+        );
+        if (!res.headersSent) {
+          res.status(500).json({
+            jsonrpc: "2.0",
+            error: {
+              code: -32603,
+              message: "Internal server error",
+            },
+            id: req.body?.id || null,
+          });
+        }
       }
     });
 
