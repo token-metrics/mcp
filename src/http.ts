@@ -382,7 +382,7 @@ export class TokenMetricsHTTPServer {
 
   public async start(): Promise<void> {
     return new Promise((resolve) => {
-      this.app.listen(this.port, "127.0.0.1", () => {
+      this.app.listen(this.port, "0.0.0.0", () => {
         console.error(
           `Token Metrics MCP HTTP Server running on port: ${this.port}`,
         );
