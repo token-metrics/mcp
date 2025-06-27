@@ -6,6 +6,7 @@
 	"$schema": "node_modules/wrangler/config-schema.json",
 	"name": "mcp-openai",
 	"main": "build/src/http-openai.js",
+  "compatibility_date":"2025-06-27",
 	"observability": {
 		"enabled": true
 	}
