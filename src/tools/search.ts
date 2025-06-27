@@ -26,38 +26,38 @@ export class SearchTool extends BaseApiTool {
         },
         required: ["query"],
       },
-      outputSchema: {
-        type: "object",
-        properties: {
-          results: {
-            type: "array",
-            items: {
-              type: "object",
-              properties: {
-                id: {
-                  type: "string",
-                  description: "ID of the resource.",
-                },
-                title: {
-                  type: "string",
-                  description: "Title or headline of the resource.",
-                },
-                text: {
-                  type: "string",
-                  description: "Text snippet or summary from the resource.",
-                },
-                url: {
-                  type: ["string", "null"],
-                  description:
-                    "URL of the resource. Optional but needed for citations to work.",
-                },
-              },
-              required: ["id", "title", "text"],
-            },
-          },
-        },
-        required: ["results"],
-      },
+      // outputSchema: {
+      //   type: "object",
+      //   properties: {
+      //     results: {
+      //       type: "array",
+      //       items: {
+      //         type: "object",
+      //         properties: {
+      //           id: {
+      //             type: "string",
+      //             description: "ID of the resource.",
+      //           },
+      //           title: {
+      //             type: "string",
+      //             description: "Title or headline of the resource.",
+      //           },
+      //           text: {
+      //             type: "string",
+      //             description: "Text snippet or summary from the resource.",
+      //           },
+      //           url: {
+      //             type: ["string", "null"],
+      //             description:
+      //               "URL of the resource. Optional but needed for citations to work.",
+      //           },
+      //         },
+      //         required: ["id", "title", "text"],
+      //       },
+      //     },
+      //   },
+      //   required: ["results"],
+      // },
     } as Tool;
   }
 
