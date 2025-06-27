@@ -174,33 +174,16 @@ export class TokenMetricsHTTPServer {
       );
 
       try {
-        console.log("Setting up SSE headers...");
+        console.log("Setting up SSE transport...");
 
-        // Set SSE-specific headers first
-        res.writeHead(200, {
-          "Content-Type": "text/event-stream",
-          "Cache-Control": "no-cache, no-store, must-revalidate",
-          Pragma: "no-cache",
-          Expires: "0",
-          Connection: "keep-alive",
-          "X-Accel-Buffering": "no", // Disable nginx buffering
-          "Access-Control-Allow-Origin": req.get("Origin") || "*",
-          "Access-Control-Allow-Credentials": "true",
-          "Access-Control-Allow-Headers":
-            "Content-Type, x-api-key, Authorization",
-        });
-
-        // Send initial data to establish connection
-        res.write("retry: 10000\n");
-        res.write("event: connected\n");
-        res.write(`data: {"sessionId": "establishing"}\n\n`);
-
-        // Flush the response to ensure headers and initial data are sent
-        try {
-          (res as any).flushHeaders?.();
-        } catch (flushError) {
-          console.log("Could not flush headers:", flushError);
-        }
+        // Set some CORS headers early, but let the transport handle the SSE headers
+        res.setHeader("Access-Control-Allow-Origin", req.get("Origin") || "*");
+        res.setHeader("Access-Control-Allow-Credentials", "true");
+        res.setHeader(
+          "Access-Control-Allow-Headers",
+          "Content-Type, x-api-key, Authorization",
+        );
+        res.setHeader("X-Accel-Buffering", "no"); // Disable nginx buffering
 
         console.log("Creating SSE transport...");
         const transport = new SSEServerTransport("/messages", res);
@@ -210,7 +193,15 @@ export class TokenMetricsHTTPServer {
 
         this.transports[transport.sessionId] = transport;
 
-        // Set up keep-alive ping to prevent connection timeout
+        console.log("Getting API key and creating server...");
+        const apiKey = req.get("x-api-key") || (req.query.apiKey as string);
+        const server = getServer(apiKey);
+
+        console.log("Connecting server to transport...");
+        await server.connect(transport);
+        console.log("SSE connection established successfully");
+
+        // Set up keep-alive ping after connection is established
         const pingInterval = setInterval(() => {
           if (!res.destroyed) {
             try {
@@ -224,6 +215,7 @@ export class TokenMetricsHTTPServer {
           }
         }, 30000); // Ping every 30 seconds
 
+        // Set up event listeners after connection is established
         res.on("close", () => {
           console.log(
             `SSE connection closed for session: ${transport.sessionId}`,
@@ -240,18 +232,6 @@ export class TokenMetricsHTTPServer {
           clearInterval(pingInterval);
           delete this.transports[transport.sessionId];
         });
-
-        console.log("Getting API key and creating server...");
-        const apiKey = req.get("x-api-key") || (req.query.apiKey as string);
-        const server = getServer(apiKey);
-
-        console.log("Connecting server to transport...");
-        await server.connect(transport);
-        console.log("SSE connection established successfully");
-
-        // Send initial connection event
-        res.write("event: connected\n");
-        res.write(`data: {"sessionId": "${transport.sessionId}"}\n\n`);
       } catch (error) {
         console.error("Error setting up SSE transport:", error);
         console.error(
