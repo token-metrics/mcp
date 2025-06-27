@@ -63,16 +63,24 @@ export class SearchTool extends BaseApiTool {
 
   async executeOpenAI(
     args: SearchInput,
-  ): Promise<{ results: { text: string }[] }> {
+  ): Promise<{ results: { id: string; title: string; text: string }[] }> {
     try {
       const results = await this.performSearch(args.query);
       return {
-        results: [{ text: JSON.stringify(results, null, 2) }],
+        results: [
+          {
+            id: "search",
+            title: "Search Results",
+            text: JSON.stringify(results, null, 2),
+          },
+        ],
       };
     } catch (error) {
       return {
         results: [
           {
+            id: "search",
+            title: "Search Results",
             text: `Error performing search: ${
               error instanceof Error ? error.message : String(error)
             }`,
