@@ -57,7 +57,7 @@ const getServer = (apiKey?: string) => {
       const toolClass = Object.getPrototypeOf(tool).constructor;
       const toolInstance = new toolClass(apiKey);
 
-      return await toolInstance.executeOpenAI(args || {});
+      return await toolInstance.execute(args || {});
     },
   );
 

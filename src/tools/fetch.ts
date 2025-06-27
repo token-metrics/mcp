@@ -54,7 +54,7 @@ export class FetchTool extends BaseApiTool {
     } as Tool;
   }
 
-  async executeOpenAI(
+  async execute(
     args: FetchInput,
   ): Promise<{ id?: string; title?: string; text: string }> {
     try {

@@ -61,7 +61,7 @@ export class SearchTool extends BaseApiTool {
     } as Tool;
   }
 
-  async executeOpenAI(
+  async execute(
     args: SearchInput,
   ): Promise<{ results: { id: string; title: string; text: string }[] }> {
     try {

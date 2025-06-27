@@ -18,7 +18,7 @@ export abstract class BaseApiTool implements BaseTool {
 
   abstract getToolDefinition(): any;
 
-  async execute(args: any): Promise<ToolResponse> {
+  async execute(args: any): Promise<ToolResponse | any> {
     try {
       const result = await this.performApiRequest(args);
       return {
