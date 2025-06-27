@@ -82,8 +82,27 @@ export class TokenMetricsHTTPServer {
   private setupMiddleware(): void {
     this.app.use(
       cors({
-        origin: true,
+        origin: (origin, callback) => {
+          if (!origin) {
+            return callback(null, true);
+          }
+
+          // const allowedOrigins = [];
+          // if (allowedOrigins.includes(origin)) {
+          //   return callback(null, true);
+          // }
+
+          console.log("CORS: Checking origin:", origin);
+          return callback(null, true);
+        },
         credentials: true,
+        methods: ["GET", "POST", "OPTIONS"],
+        allowedHeaders: [
+          "Content-Type",
+          "x-api-key",
+          "Authorization",
+          "mcp-session-id",
+        ],
       }),
     );
 
@@ -112,24 +131,79 @@ export class TokenMetricsHTTPServer {
     this.app.get("/", this.handleMCPGetRequest.bind(this));
 
     this.app.all("/sse", async (req: Request, res: Response) => {
+      // Handle CORS preflight requests
+      if (req.method === "OPTIONS") {
+        res.setHeader("Access-Control-Allow-Origin", req.get("Origin") || "*");
+        res.setHeader("Access-Control-Allow-Credentials", "true");
+        res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+        res.setHeader(
+          "Access-Control-Allow-Headers",
+          "Content-Type, x-api-key, Authorization, mcp-session-id",
+        );
+        res.setHeader("Access-Control-Max-Age", "86400"); // 24 hours
+        res.status(200).end();
+        return;
+      }
+
       if (!["GET", "POST"].includes(req.method)) {
         res.status(405).send("Method Not Allowed");
         return;
       }
 
+      // Add request validation like other endpoints
+      if (!this.isValidRequest(req)) {
+        console.log("SSE request blocked - potential DNS rebinding attack", {
+          host: req.get("Host"),
+          origin: req.get("Origin"),
+          userAgent: req.get("User-Agent"),
+        });
+        res.status(403).json({
+          error: "Invalid request - potential DNS rebinding attack",
+          code: -32600,
+        });
+        return;
+      }
+
       console.log(
         `Received ${req.method} request to /sse (deprecated SSE transport)`,
+        {
+          host: req.get("Host"),
+          origin: req.get("Origin"),
+          userAgent: req.get("User-Agent"),
+        },
       );
-      const transport = new SSEServerTransport("/messages", res);
-      this.transports[transport.sessionId] = transport;
 
-      res.on("close", () => {
-        delete this.transports[transport.sessionId];
-      });
+      // Set CORS headers explicitly for SSE
+      res.setHeader("Access-Control-Allow-Origin", req.get("Origin") || "*");
+      res.setHeader("Access-Control-Allow-Credentials", "true");
+      res.setHeader(
+        "Access-Control-Allow-Headers",
+        "Content-Type, x-api-key, Authorization",
+      );
 
-      const apiKey = req.get("x-api-key") || (req.query.apiKey as string);
-      const server = getServer(apiKey);
-      await server.connect(transport);
+      try {
+        const transport = new SSEServerTransport("/messages", res);
+        this.transports[transport.sessionId] = transport;
+
+        res.on("close", () => {
+          console.log(
+            `SSE connection closed for session: ${transport.sessionId}`,
+          );
+          delete this.transports[transport.sessionId];
+        });
+
+        const apiKey = req.get("x-api-key") || (req.query.apiKey as string);
+        const server = getServer(apiKey);
+        await server.connect(transport);
+      } catch (error) {
+        console.error("Error setting up SSE transport:", error);
+        if (!res.headersSent) {
+          res.status(500).json({
+            error: "Failed to establish SSE connection",
+            message: error instanceof Error ? error.message : String(error),
+          });
+        }
+      }
     });
 
     this.app.post("/messages", async (req: Request, res: Response) => {
@@ -285,33 +359,51 @@ export class TokenMetricsHTTPServer {
   private isValidRequest(req: Request): boolean {
     const host = req.get("Host");
     const origin = req.get("Origin");
+    const userAgent = req.get("User-Agent");
+
+    console.log("Validating request:", {
+      host,
+      origin,
+      userAgent,
+      method: req.method,
+      url: req.url,
+    });
 
     // If no host header, reject (required for HTTP/1.1)
     if (!host) {
+      console.log("Request rejected: No Host header");
       return false;
     }
 
     // Check for DNS rebinding attack patterns
     if (origin && this.isPotentialDNSRebinding(host, origin)) {
+      console.log("Request rejected: Potential DNS rebinding attack", {
+        host,
+        origin,
+      });
       return false;
     }
 
     // Allow requests without Origin header (direct API calls, curl, etc.)
     if (!origin) {
+      console.log("Request allowed: No Origin header (direct API call)");
       return true;
     }
 
     // Allow same-origin requests
     if (this.isSameOrigin(host, origin)) {
+      console.log("Request allowed: Same origin");
       return true;
     }
 
     // Allow localhost/127.0.0.1 origins (development)
     if (this.isLocalhostOrigin(origin)) {
+      console.log("Request allowed: Localhost origin");
       return true;
     }
 
     // Allow all other origins (but they passed DNS rebinding check above)
+    console.log("Request allowed: External origin passed DNS rebinding check");
     return true;
   }
 
@@ -331,20 +423,31 @@ export class TokenMetricsHTTPServer {
 
   private isLocalHost(host: string): boolean {
     const hostname = host.split(":")[0]; // Remove port
-    return (
+
+    // Check for localhost variations
+    if (
       hostname === "localhost" ||
       hostname === "127.0.0.1" ||
-      hostname === "::1" ||
-      hostname.startsWith("192.168.") ||
-      hostname.startsWith("10.") ||
-      hostname.startsWith("172.16.") ||
-      hostname.startsWith("172.17.") ||
-      hostname.startsWith("172.18.") ||
-      hostname.startsWith("172.19.") ||
-      hostname.startsWith("172.2") ||
-      hostname.startsWith("172.30.") ||
-      hostname.startsWith("172.31.")
-    );
+      hostname === "::1"
+    ) {
+      return true;
+    }
+
+    // Check for private IP ranges
+    if (hostname.startsWith("192.168.") || hostname.startsWith("10.")) {
+      return true;
+    }
+
+    // Check for 172.16.0.0 - 172.31.255.255 range properly
+    if (hostname.startsWith("172.")) {
+      const parts = hostname.split(".");
+      if (parts.length >= 2) {
+        const secondOctet = parseInt(parts[1], 10);
+        return secondOctet >= 16 && secondOctet <= 31;
+      }
+    }
+
+    return false;
   }
 
   private isLocalhostOrigin(origin: string): boolean {
