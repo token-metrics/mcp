@@ -24,10 +24,6 @@ import { TokenHourlyTradingSignalTool } from "./hourly-trading-signals.js";
 
 // Registry of all available tools
 export const AVAILABLE_TOOLS: BaseTool[] = [
-  // OpenAI ChatGPT Connector Required Tools
-  new SearchTool(),
-  new FetchTool(),
-  // Original Token Metrics Tools
   new TokenDataTool(),
   new PriceTool(),
   new TokenTraderGradeTool(),
@@ -49,6 +45,7 @@ export const AVAILABLE_TOOLS: BaseTool[] = [
   new IndicesPerformanceTool(),
   new TokenHourlyTradingSignalTool(),
 ];
+export const OPENAI_TOOLS = [new SearchTool(), new FetchTool()];
 
 // Export tool classes for individual use
 export {

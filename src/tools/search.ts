@@ -26,63 +26,58 @@ export class SearchTool extends BaseApiTool {
         },
         required: ["query"],
       },
-      // outputSchema: {
-      //   type: "object",
-      //   properties: {
-      //     results: {
-      //       type: "array",
-      //       items: {
-      //         type: "object",
-      //         properties: {
-      //           id: {
-      //             type: "string",
-      //             description: "ID of the resource.",
-      //           },
-      //           title: {
-      //             type: "string",
-      //             description: "Title or headline of the resource.",
-      //           },
-      //           text: {
-      //             type: "string",
-      //             description: "Text snippet or summary from the resource.",
-      //           },
-      //           url: {
-      //             type: ["string", "null"],
-      //             description:
-      //               "URL of the resource. Optional but needed for citations to work.",
-      //           },
-      //         },
-      //         required: ["id", "title", "text"],
-      //       },
-      //     },
-      //   },
-      //   required: ["results"],
-      // },
+      outputSchema: {
+        type: "object",
+        properties: {
+          results: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                id: {
+                  type: "string",
+                  description: "ID of the resource.",
+                },
+                title: {
+                  type: "string",
+                  description: "Title or headline of the resource.",
+                },
+                text: {
+                  type: "string",
+                  description: "Text snippet or summary from the resource.",
+                },
+                url: {
+                  type: ["string", "null"],
+                  description:
+                    "URL of the resource. Optional but needed for citations to work.",
+                },
+              },
+              required: ["id", "title", "text"],
+            },
+          },
+        },
+        required: ["results"],
+      },
     } as Tool;
   }
 
-  async execute(args: SearchInput) {
+  async executeOpenAI(
+    args: SearchInput,
+  ): Promise<{ results: { text: string }[] }> {
     try {
       const results = await this.performSearch(args.query);
       return {
-        content: [
-          {
-            type: "text" as const,
-            text: JSON.stringify(results, null, 2),
-          },
-        ],
+        results: [{ text: JSON.stringify(results, null, 2) }],
       };
     } catch (error) {
       return {
-        content: [
+        results: [
           {
-            type: "text" as const,
             text: `Error performing search: ${
               error instanceof Error ? error.message : String(error)
             }`,
           },
         ],
-        isError: true,
       };
     }
   }

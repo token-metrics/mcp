@@ -14,6 +14,7 @@
     "start:dev": "npx nodemon --exec \"npm run build && node build/src/cli.js\" --ext ts --watch src",
     "start": "npm run build && node build/src/cli.js",
     "start:http": "npm run build && node build/src/http.js",
+    "start:http:openai": "npm run build && node build/src/http-openai.js",
     "lint": "eslint . --ext .ts",
     "test": "echo \"No tests specified\" && exit 0",
     "prepublishOnly": "npm run build"
