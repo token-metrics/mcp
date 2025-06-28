@@ -1,5 +1,6 @@
 import { Tool } from "@modelcontextprotocol/sdk/types.js";
 import { BaseApiTool, TokenMetricsBaseResponse } from "./base-api-tool.js";
+import { ToolResponse } from "./types.js";
 
 interface FetchInput {
   id: string;
@@ -54,21 +55,27 @@ export class FetchTool extends BaseApiTool {
     } as Tool;
   }
 
-  async execute(
-    args: FetchInput,
-  ): Promise<{ id?: string; title?: string; text: string }> {
+  async execute(args: FetchInput): Promise<ToolResponse> {
     try {
       const result = await this.performApiRequest(args);
       return {
-        id: args.id,
-        title: result?.data?.[0]?.TOKEN_NAME,
-        text: JSON.stringify(result, null, 2),
+        content: [
+          {
+            type: "text",
+            text: JSON.stringify(result, null, 2),
+          },
+        ],
       };
     } catch (error) {
       return {
-        text: `Error fetching token data: ${
-          error instanceof Error ? error.message : String(error)
-        }`,
+        content: [
+          {
+            type: "text",
+            text: `Error fetching token data: ${
+              error instanceof Error ? error.message : String(error)
+            }`,
+          },
+        ],
       };
     }
   }

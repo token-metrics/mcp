@@ -1,6 +1,7 @@
 import { Tool } from "@modelcontextprotocol/sdk/types.js";
 import { BaseApiTool, TokenMetricsBaseResponse } from "./base-api-tool.js";
 import search from "../utils/search.js";
+import { ToolResponse } from "./types.js";
 
 interface SearchInput {
   query: string;
@@ -61,26 +62,22 @@ export class SearchTool extends BaseApiTool {
     } as Tool;
   }
 
-  async execute(
-    args: SearchInput,
-  ): Promise<{ results: { id: string; title: string; text: string }[] }> {
+  async execute(args: SearchInput): Promise<ToolResponse> {
     try {
       const results = await this.performSearch(args.query);
       return {
-        results: [
+        content: [
           {
-            id: "search",
-            title: "Search Results",
+            type: "text",
             text: JSON.stringify(results, null, 2),
           },
         ],
       };
     } catch (error) {
       return {
-        results: [
+        content: [
           {
-            id: "search",
-            title: "Search Results",
+            type: "text",
             text: `Error performing search: ${
               error instanceof Error ? error.message : String(error)
             }`,
