@@ -27,38 +27,48 @@ export class SearchTool extends BaseApiTool {
         },
         required: ["query"],
       },
-      // outputSchema: {
-      //   type: "object",
-      //   properties: {
-      //     results: {
-      //       type: "array",
-      //       items: {
-      //         type: "object",
-      //         properties: {
-      //           id: {
-      //             type: "string",
-      //             description: "ID of the resource.",
-      //           },
-      //           title: {
-      //             type: "string",
-      //             description: "Title or headline of the resource.",
-      //           },
-      //           text: {
-      //             type: "string",
-      //             description: "Text snippet or summary from the resource.",
-      //           },
-      //           url: {
-      //             type: ["string", "null"],
-      //             description:
-      //               "URL of the resource. Optional but needed for citations to work.",
-      //           },
-      //         },
-      //         required: ["id", "title", "text"],
-      //       },
-      //     },
-      //   },
-      //   required: ["results"],
-      // },
+      outputSchema: {
+        type: "object",
+        properties: {
+          content: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                type: "string",
+                text: "string",
+              },
+            },
+          },
+          results: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                id: {
+                  type: "string",
+                  description: "ID of the resource.",
+                },
+                title: {
+                  type: "string",
+                  description: "Title or headline of the resource.",
+                },
+                text: {
+                  type: "string",
+                  description: "Text snippet or summary from the resource.",
+                },
+                url: {
+                  type: ["string", "null"],
+                  description:
+                    "URL of the resource. Optional but needed for citations to work.",
+                },
+              },
+              required: ["id", "title", "text"],
+            },
+          },
+        },
+        required: ["results"],
+      },
     } as Tool;
   }
 
@@ -66,6 +76,13 @@ export class SearchTool extends BaseApiTool {
     try {
       const results = await this.performSearch(args.query);
       return {
+        results: [
+          {
+            id: "search",
+            title: "Search Results",
+            text: JSON.stringify(results, null, 2),
+          },
+        ],
         content: [
           {
             type: "text",
@@ -75,6 +92,15 @@ export class SearchTool extends BaseApiTool {
       };
     } catch (error) {
       return {
+        results: [
+          {
+            id: "error",
+            title: "Search Error",
+            text: `Error performing search: ${
+              error instanceof Error ? error.message : String(error)
+            }`,
+          },
+        ],
         content: [
           {
             type: "text",

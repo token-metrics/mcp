@@ -22,36 +22,46 @@ export class FetchTool extends BaseApiTool {
         },
         required: ["id"],
       },
-      // outputSchema: {
-      //   type: "object",
-      //   properties: {
-      //     id: {
-      //       type: "string",
-      //       description: "ID of the resource.",
-      //     },
-      //     title: {
-      //       type: "string",
-      //       description: "Title or headline of the fetched resource.",
-      //     },
-      //     text: {
-      //       type: "string",
-      //       description: "Complete textual content of the resource.",
-      //     },
-      //     url: {
-      //       type: ["string", "null"],
-      //       description:
-      //         "URL of the resource. Optional but needed for citations to work.",
-      //     },
-      //     metadata: {
-      //       type: ["object", "null"],
-      //       additionalProperties: {
-      //         type: "string",
-      //       },
-      //       description: "Optional metadata providing additional context.",
-      //     },
-      //   },
-      //   required: ["id", "title", "text"],
-      // },
+      outputSchema: {
+        type: "object",
+        properties: {
+          content: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                type: "string",
+                text: "string",
+              },
+            },
+          },
+          id: {
+            type: "string",
+            description: "ID of the resource.",
+          },
+          title: {
+            type: "string",
+            description: "Title or headline of the fetched resource.",
+          },
+          text: {
+            type: "string",
+            description: "Complete textual content of the resource.",
+          },
+          url: {
+            type: ["string", "null"],
+            description:
+              "URL of the resource. Optional but needed for citations to work.",
+          },
+          metadata: {
+            type: ["object", "null"],
+            additionalProperties: {
+              type: "string",
+            },
+            description: "Optional metadata providing additional context.",
+          },
+        },
+        required: ["id", "title", "text"],
+      },
     } as Tool;
   }
 
@@ -59,6 +69,9 @@ export class FetchTool extends BaseApiTool {
     try {
       const result = await this.performApiRequest(args);
       return {
+        id: args.id,
+        title: "Fetch Results",
+        text: JSON.stringify(result, null, 2),
         content: [
           {
             type: "text",
@@ -68,6 +81,11 @@ export class FetchTool extends BaseApiTool {
       };
     } catch (error) {
       return {
+        id: "error",
+        title: "Fetch Error",
+        text: `Error fetching token data: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
         content: [
           {
             type: "text",
