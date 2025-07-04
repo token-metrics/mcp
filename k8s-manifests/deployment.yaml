@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tm-mcp-server
+  namespace: tm-mcp-server
+  labels:
+    app: tm-mcp-server
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: tm-mcp-server
+  template:
+    metadata:
+      labels:
+        app: tm-mcp-server
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1001
+        runAsGroup: 1001
+        fsGroup: 1001
+      containers:
+      - name: tm-mcp-server
+        image: us-central1-docker.pkg.dev/tmgalaxy/tm-de-artifact/tm-mcp-server:latest
+        imagePullPolicy: Always
+        command: ["node"]
+        args: ["build/src/http-openai.js"]
+        env:
+        - name: TOKEN_METRICS_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: token-metrics-api-secret
+              key: TOKEN_METRICS_API_KEY
+        - name: NODE_ENV
+          value: "production"
+        - name: PORT
+          value: "3000"
+        ports:
+        - containerPort: 3000
+          name: http
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
