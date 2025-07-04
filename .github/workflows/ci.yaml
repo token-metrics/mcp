@@ -5,6 +5,10 @@ on:
     branches:
       - staging # staging
       - development # alpha
+  pull_request:
+    branches:
+      - staging
+      - development
   workflow_dispatch:
 
 jobs:
