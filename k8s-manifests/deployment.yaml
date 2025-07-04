@@ -22,7 +22,7 @@ spec:
         fsGroup: 1001
       containers:
       - name: tm-mcp-server
-        image: us-central1-docker.pkg.dev/tmgalaxy/tm-mcp-artifact/tm-mcp-server:2025-07-04-0e2c209
+        image: us-central1-docker.pkg.dev/tmgalaxy/tm-mcp-artifact/tm-mcp-server:2025-07-04-53fcc1a
         imagePullPolicy: Always
         command: ["npm"]
         args: ["run", "start:http:openai"]
