@@ -69,14 +69,11 @@ jobs:
         run: |
           BRANCH_NAME=${{ (github.ref_name == 'master' && 'development') }}
 
-          # Clone the repo using PAT
-          git clone https://seguntokenmetrics:${{ secrets.GH_PAT }}@github.com/token-metrics/mcp.git
-          cd mcp
-
+          # Configure git for the current repository
           git config --local user.name "seguntokenmetrics"
           git config --local user.email "segun@tokenmetrics.com"
 
-          # Update the tag
+          # Update the tag in the existing deployment.yaml file
           sed -i "s|image: .*|image: us-central1-docker.pkg.dev/tmgalaxy/tm-mcp-artifact/tm-mcp-server:${TAG}|" ./k8s-manifests/deployment.yaml
 
           git add ./k8s-manifests/deployment.yaml
