@@ -87,5 +87,5 @@ jobs:
             sleep 5
           done
         env:
-          GH_PAT: ${{ secrets.GH_PAT }}
+          GITHUB_TOKEN: secrets.GITHUB_TOKEN
 
