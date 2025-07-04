@@ -27,11 +27,6 @@ spec:
         command: ["npm"]
         args: ["run", "start:http:openai"]
         env:
-        - name: TOKEN_METRICS_API_KEY
-          valueFrom:
-            secretKeyRef:
-              name: token-metrics-api-secret
-              key: TOKEN_METRICS_API_KEY
         - name: NODE_ENV
           value: "production"
         - name: PORT
@@ -44,6 +39,3 @@ spec:
           requests:
             memory: "128Mi"
             cpu: "100m"
-          limits:
-            memory: "256Mi"
-            cpu: "200m"
