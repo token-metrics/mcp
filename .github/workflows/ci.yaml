@@ -72,15 +72,14 @@ jobs:
           secrets: |
             alpha-env:tmgalaxy/tokenmetrics-alpha-env
             staging-env:tmgalaxy/tokenmetrics-staging-env
-            prod-env:tmgalaxy/tokenmetrics-prod-env
-      - name: Create .env file production
-        if: ${{ steps.branch-names.outputs.ref_branch == 'main' }}
+      - name: Create .env file development
+        if: ${{ steps.branch-names.outputs.ref_branch == 'development' }}
         run: |
-          echo '${{ steps.secrets.outputs.prod-env }}' > .env
+          echo '${{ steps.secrets.outputs.alpha-env }}' > .env
           echo 'PR_PIPELINE=true' >> .env
 
-      - name: Create .env file staging
-        if: ${{ steps.branch-names.outputs.ref_branch == 'staging'}}
+      - name: Create .env file master
+        if: ${{ steps.branch-names.outputs.ref_branch == 'master'}}
         run: |
           echo '${{ steps.secrets.outputs.staging-env }}' > .env
           echo 'PR_PIPELINE=true' >> .env
@@ -131,11 +130,9 @@ jobs:
       - name: Set Docker tag
         id: set_tag
         run: |
-          if [ "${GITHUB_REF_NAME}" = "main" ]; then
-            echo "TAG=prod-${GITHUB_SHA::7}" >> $GITHUB_ENV
-          elif [ "${GITHUB_REF_NAME}" = "development" ]; then
+          if [ "${GITHUB_REF_NAME}" = "development" ]; then
             echo "TAG=alpha-${GITHUB_SHA::7}" >> $GITHUB_ENV
-          elif [ "${GITHUB_REF_NAME}" = "staging" ]; then
+          elif [ "${GITHUB_REF_NAME}" = "master" ]; then
             echo "TAG=staging-${GITHUB_SHA::7}" >> $GITHUB_ENV
           else
             echo "TAG=latest-${GITHUB_SHA::7}" >> $GITHUB_ENV
@@ -153,7 +150,7 @@ jobs:
           context: .
           file: Dockerfile
           push: true
-          tags: us-central1-docker.pkg.dev/tmgalaxy/tm-de-artifact/tm-front:${{ env.TAG }}
+          tags: us-central1-docker.pkg.dev/tmgalaxy/tm-de-artifact/tm-mcp-server:${{ env.TAG }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
           build-args: |
             TURBO_TEAM=${{ vars.TURBO_TEAM }}
@@ -163,22 +160,21 @@ jobs:
           DOCKER_BUILDKIT: 1
           BUILDKIT_INLINE_CACHE: 1
 
-      - name: Update values.yaml with image tag
-        if: ${{ github.event_name == 'push' || github.event_name == 'workflow_dispatch' }}
+      - name: Update deployment.yaml with image tag
         run: |
-          BRANCH_NAME=${{ (github.ref_name == 'main' && 'prod' || github.ref_name == 'development' && 'alpha' || github.ref_name == 'staging' && 'staging') }}
+          BRANCH_NAME=${{ (github.ref_name == 'master' && 'development') }}
 
           # Clone the repo using PAT
-          git clone https://seguntokenmetrics:${{ secrets.GH_PAT }}@github.com/token-metrics/tokenmetrics-3.0.git
-          cd tokenmetrics-3.0
+          git clone https://seguntokenmetrics:${{ secrets.GH_PAT }}@github.com/token-metrics/mcp.git
+          cd mcp
 
           git config --local user.name "seguntokenmetrics"
           git config --local user.email "segun@tokenmetrics.com"
 
           # Update the tag
-          sed -i "s/tag: .*/tag: ${TAG}/" ./helm/tm-app/helmvars/${BRANCH_NAME}/do-values.yaml
+          sed -i "s/image: .*/image: ${TAG}/" ./k8s-manifests/deployment.yaml
 
-          git add ./helm/tm-app/helmvars/${BRANCH_NAME}/do-values.yaml
+          git add ./k8s-manifests/deployment.yaml
           git commit -m "Update image tag to ${TAG} [skip ci]"
 
           # Try to push, break if successful
