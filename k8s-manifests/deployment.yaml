@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tm-mcp-server
+  namespace: tm-mcp-server
+  labels:
+    app: tm-mcp-server
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: tm-mcp-server
+  template:
+    metadata:
+      labels:
+        app: tm-mcp-server
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1001
+        runAsGroup: 1001
+        fsGroup: 1001
+      containers:
+      - name: tm-mcp-server
+        image: us-central1-docker.pkg.dev/tmgalaxy/tm-mcp-artifact/tm-mcp-server:2025-07-04-0e2c209
+        imagePullPolicy: Always
+        command: ["npm"]
+        args: ["run", "start:http:openai"]
+        env:
+        - name: NODE_ENV
+          value: "production"
+        - name: PORT
+          value: "3000"
+        workingDir: /app
+        ports:
+        - containerPort: 3000
+          name: http
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
