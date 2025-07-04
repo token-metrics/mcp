@@ -3,120 +3,38 @@ run-name: ${{ github.workflow }} triggered by @${{ github.actor }} for ${{ githu
 on:
   push:
     branches:
-      - staging # staging
-      - development # alpha
+      - master
   pull_request:
     branches:
-      - staging
-      - development
+      - master
   workflow_dispatch:
 
 jobs:
-  unit-test:
-    runs-on: ubuntu-latest
-    steps:
-      - name: "Checkout repository on branch: ${{ github.REF }}"
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ github.HEAD_REF }}
-          fetch-depth: 0
-
-      - name: Cache Node.js modules
-        uses: actions/cache@v4
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20.x
-
-      - name: Install dependencies
-        run: npm ci .
-
-      - name: Lint code
-        env:
-          NODE_OPTIONS: "--max-old-space-size=4096"
-        run: npm run lint
-
-  write-creds-from-secrets:
-    name: "Write env from secrets"
-    runs-on: ubuntu-latest
-    permissions:
-      contents: "read"
-      id-token: "write"
-
-    steps:
-      - name: Checkout branch
-        uses: actions/checkout@v4
-
-      - name: Get branch names.
-        id: branch-names
-        uses: tj-actions/branch-names@v8
-
-      - name: Authenticate to Google Cloud
-        id: auth
-        uses: google-github-actions/auth@v2
-        with:
-          token_format: "access_token"
-          workload_identity_provider: ${{ secrets.WORKLOAD_IDENTITY_PROVIDER }}
-          service_account: ${{ secrets.SERVICE_ACCOUNT }}
-          access_token_lifetime: 1200s
-
-      - name: Retrieve .env file from Secret Manager
-        id: secrets
-        uses: google-github-actions/get-secretmanager-secrets@v1
-        with:
-          secrets: |
-            alpha-env:tmgalaxy/tokenmetrics-alpha-env
-            staging-env:tmgalaxy/tokenmetrics-staging-env
-      - name: Create .env file development
-        if: ${{ steps.branch-names.outputs.ref_branch == 'development' }}
-        run: |
-          echo '${{ steps.secrets.outputs.alpha-env }}' > .env
-          echo 'PR_PIPELINE=true' >> .env
-
-      - name: Create .env file master
-        if: ${{ steps.branch-names.outputs.ref_branch == 'master'}}
-        run: |
-          echo '${{ steps.secrets.outputs.staging-env }}' > .env
-          echo 'PR_PIPELINE=true' >> .env
-
-      - name: debug env
-        run: cat .env
-
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: creds-artifact
-          path: |
-            .env
-          include-hidden-files: true
   docker-build-and-push:
     name: "Docker Build and Push"
     runs-on: ubuntu-latest
     timeout-minutes: 60
-    needs: [write-creds-from-secrets]
     permissions: write-all
 
     steps:
       - uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Download artifacts
-        uses: actions/download-artifact@v4
+      
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
         with:
-          name: creds-artifact
-          path: ./
+            platforms: all
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
       - name: Authenticate to Google Cloud
         id: auth
         uses: google-github-actions/auth@v2
         with:
           token_format: "access_token"
+          project_id: 'tmgalaxy'
           workload_identity_provider: ${{ secrets.WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ secrets.SERVICE_ACCOUNT }}
 
@@ -127,22 +45,23 @@ jobs:
           username: oauth2accesstoken
           password: ${{ steps.auth.outputs.access_token }}
 
-      - name: Set Docker tag
-        id: set_tag
-        run: |
-          if [ "${GITHUB_REF_NAME}" = "development" ]; then
-            echo "TAG=alpha-${GITHUB_SHA::7}" >> $GITHUB_ENV
-          elif [ "${GITHUB_REF_NAME}" = "master" ]; then
-            echo "TAG=staging-${GITHUB_SHA::7}" >> $GITHUB_ENV
-          else
-            echo "TAG=latest-${GITHUB_SHA::7}" >> $GITHUB_ENV
-          fi
-          echo "Docker tag: $TAG"
-
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
+      
+      - name: Docker Meta
+        id: meta
+        uses: docker/metadata-action@v5
         with:
-          driver: docker
+          images: blockopsnetwork/telescope
+          flavor: |
+            latest=false
+          tags: |
+            type=raw,value={{date 'YYYY-MM-DD'}}-{{sha}}
+            type=ref,event=tag
+            type=edge
+  
+      - name: Set image tag env
+        run: echo "TAG=${{ steps.meta.outputs.tags }}" >> $GITHUB_ENV
 
       - name: Build and push image
         uses: docker/build-push-action@v6
@@ -151,14 +70,6 @@ jobs:
           file: Dockerfile
           push: true
           tags: us-central1-docker.pkg.dev/tmgalaxy/tm-de-artifact/tm-mcp-server:${{ env.TAG }}
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          build-args: |
-            TURBO_TEAM=${{ vars.TURBO_TEAM }}
-          secrets: |
-            "turbo_token=${{ secrets.TURBO_TOKEN }}"
-        env:
-          DOCKER_BUILDKIT: 1
-          BUILDKIT_INLINE_CACHE: 1
 
       - name: Update deployment.yaml with image tag
         run: |
@@ -172,7 +83,7 @@ jobs:
           git config --local user.email "segun@tokenmetrics.com"
 
           # Update the tag
-          sed -i "s/image: .*/image: ${TAG}/" ./k8s-manifests/deployment.yaml
+          sed -i "s|image: .*|image: us-central1-docker.pkg.dev/tmgalaxy/tm-de-artifact/tm-mcp-server:${TAG}|" ./k8s-manifests/deployment.yaml
 
           git add ./k8s-manifests/deployment.yaml
           git commit -m "Update image tag to ${TAG} [skip ci]"
@@ -186,19 +97,4 @@ jobs:
           done
         env:
           GH_PAT: ${{ secrets.GH_PAT }}
-  release-log:
-    name: "Release Log"
-    runs-on: ubuntu-latest
-    needs: [docker-build-and-push]
-    permissions:
-      contents: write
-      pull-requests: write
-    steps:
-      - name: Release Log
-        if: ${{ github.ref == 'refs/heads/main' }}
-        uses: release-drafter/release-drafter@v6
-        with:
-          config-name: release-log.yaml
-          disable-autolabeler: false
-        env:
-          GITHUB_TOKEN: ${{ secrets.ARGOCD_PAT }}
+

@@ -1,6 +1,0 @@
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: tm-mcp-server
-  labels:
-    name: tm-mcp-server

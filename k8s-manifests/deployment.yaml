@@ -24,8 +24,8 @@ spec:
       - name: tm-mcp-server
         image: us-central1-docker.pkg.dev/tmgalaxy/tm-de-artifact/tm-mcp-server:latest
         imagePullPolicy: Always
-        command: ["node"]
-        args: ["build/src/http-openai.js"]
+        command: ["npm"]
+        args: ["run", "start:http:openai"]
         env:
         - name: TOKEN_METRICS_API_KEY
           valueFrom:
@@ -36,6 +36,7 @@ spec:
           value: "production"
         - name: PORT
           value: "3000"
+        workingDir: /app
         ports:
         - containerPort: 3000
           name: http
