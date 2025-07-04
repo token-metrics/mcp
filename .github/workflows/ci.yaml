@@ -1,4 +1,4 @@
-name: MCP CI Pipeline
+name: Build and Push Docker Image
 run-name: ${{ github.workflow }} triggered by @${{ github.actor }} for ${{ github.event.head_commit.message }} from ${{ github.ref_name }}
 on:
   push:
@@ -71,7 +71,7 @@ jobs:
           context: .
           file: Dockerfile
           push: true
-          tags: us-central1-docker.pkg.dev/tmgalaxy/tm-de-artifact/tm-mcp-server:${{ env.TAG }}
+          tags: us-central1-docker.pkg.dev/tmgalaxy/tm-mcp-artifact/tm-mcp-server:${{ env.TAG }}
 
       - name: Update deployment.yaml with image tag
         run: |
@@ -85,7 +85,7 @@ jobs:
           git config --local user.email "segun@tokenmetrics.com"
 
           # Update the tag
-          sed -i "s|image: .*|image: us-central1-docker.pkg.dev/tmgalaxy/tm-de-artifact/tm-mcp-server:${TAG}|" ./k8s-manifests/deployment.yaml
+          sed -i "s|image: .*|image: us-central1-docker.pkg.dev/tmgalaxy/tm-mcp-artifact/tm-mcp-server:${TAG}|" ./k8s-manifests/deployment.yaml
 
           git add ./k8s-manifests/deployment.yaml
           git commit -m "Update image tag to ${TAG} [skip ci]"
