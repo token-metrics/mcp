@@ -63,7 +63,7 @@ jobs:
 
       - name: Update deployment.yaml with image tag
         run: |
-          BRANCH_NAME=${{ (github.ref_name == 'master' && 'development') }}
+          # BRANCH_NAME=${{ (github.ref_name == 'master' && 'development') }}
 
           # Configure git for the current repository
           git config --local user.name "seguntokenmetrics"
