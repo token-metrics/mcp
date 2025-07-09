@@ -22,7 +22,7 @@ spec:
         fsGroup: 1001
       containers:
       - name: tm-mcp-server
-        image: us-central1-docker.pkg.dev/tmgalaxy/tm-mcp-artifact/tm-mcp-server:2025-07-04-0fded86
+        image: tmmcpregistry-hjata4hfarb4fqfa.azurecr.io/tm-mcp-server:2025-07-04-0fded86
         imagePullPolicy: Always
         command: ["npm"]
         args: ["run", "start:http:openai"]
@@ -39,3 +39,5 @@ spec:
           requests:
             memory: "128Mi"
             cpu: "100m"
+      imagePullSecrets:
+      - name: acr-json-key
