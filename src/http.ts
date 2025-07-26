@@ -23,7 +23,7 @@ const getServer = (apiKey?: string) => {
   const server = new Server(
     {
       name: "Token Metrics MCP Server",
-      version: "1.3.0",
+      version: "1.3.1",
     },
     {
       capabilities: {
@@ -102,6 +102,7 @@ export class TokenMetricsHTTPServer {
           "x-api-key",
           "Authorization",
           "mcp-session-id",
+          "x-integration",
         ],
       }),
     );
@@ -121,7 +122,7 @@ export class TokenMetricsHTTPServer {
       return res.status(200).json({
         status: "healthy",
         timestamp: new Date().toISOString(),
-        version: "1.3.0",
+        version: "1.3.1",
         service: "Token Metrics MCP Server",
       });
     });

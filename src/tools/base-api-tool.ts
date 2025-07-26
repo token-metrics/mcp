@@ -69,6 +69,7 @@ export abstract class BaseApiTool implements BaseTool {
         headers: {
           Accept: "application/json",
           "x-api-key": this.apiKey,
+          "x-integration": "mcp",
         },
         timeout: 30000,
       });
