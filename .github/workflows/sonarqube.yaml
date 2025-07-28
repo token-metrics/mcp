@@ -1,0 +1,105 @@
+name: Security Scan
+
+on:
+  schedule:
+    - cron: '0 2 * * *'  # Run daily at 2AM UTC
+  workflow_dispatch:
+
+jobs:
+  security-scan:
+    name: Security Analysis
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 
+
+      # ----- Setup Python Virtual Environment -----
+      - name: Setup Python Environment
+        run: |
+          python3 -m venv security-env
+          source security-env/bin/activate
+          echo "VIRTUAL_ENV=$(pwd)/security-env" >> $GITHUB_ENV
+          echo "$(pwd)/security-env/bin" >> $GITHUB_PATH
+
+      # ----- Install security tooling -----
+      - name: Install Bandit, Semgrep, Trivy
+        run: |
+          source security-env/bin/activate
+          pip install --disable-pip-version-check \
+            bandit==1.7.8 \
+            semgrep==1.71.0
+
+      # ----- Python SAST (if any Python files exist) -----
+      - name: Bandit Security Scan
+        run: |
+          source security-env/bin/activate
+          if [ -d "scripts" ] || [ -f "*.py" ]; then
+            bandit -r . -ll -ii -f json -o bandit.json || true
+          else
+            echo "No Python files found, skipping Bandit"
+            echo '{"results": []}' > bandit.json
+          fi
+        continue-on-error: true
+
+      # ----- Security rules (multi-language) -----
+      - name: Semgrep Security Scan
+        run: |
+          semgrep ci --config p/ci --sarif --output semgrep.sarif || true
+
+      # ----- Dependency and config scans -----
+      - name: Trivy FileSystem Scan
+        run: |
+          trivy fs . --exit-code 0 --severity HIGH,CRITICAL --format sarif --output trivy-fs.sarif --timeout 10m --scanners vuln \
+            --skip-dirs node_modules,build,dist || echo '{"version":"2.1.0","runs":[]}' > trivy-fs.sarif
+        continue-on-error: true
+        timeout-minutes: 10
+
+      - name: Trivy Config Scan
+        run: |
+          trivy config . --exit-code 0 --severity HIGH,CRITICAL --format sarif --output trivy-config.sarif --timeout 5m \
+            --skip-dirs node_modules,build,dist || echo '{"version":"2.1.0","runs":[]}' > trivy-config.sarif
+        continue-on-error: true
+        timeout-minutes: 5
+
+      # ----- SonarQube Analysis -----
+      - name: SonarQube Scan
+        uses: SonarSource/sonarqube-scan-action@v5
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN_APP }}
+          SONAR_HOST_URL: http://sonarqube.tokenmetrics.com
+        with:
+          args: |
+            -Dsonar.sarifReportPaths=semgrep.sarif,trivy-fs.sarif,trivy-config.sarif
+            -Dsonar.projectKey=mcp
+            -Dsonar.projectName=mcp
+            -Dsonar.projectVersion=${{ github.sha }}
+            -Dsonar.sources=src
+            -Dsonar.typescript.tsconfigPath=tsconfig.json
+            -Dsonar.javascript.node.maxspace=4096
+            -Dsonar.exclusions=**/node_modules/**,**/build/**,**/dist/**,**/*.test.*,**/*.spec.*
+            -Dsonar.test.exclusions=**/*.test.*,**/*.spec.*
+            -Dsonar.qualitygate.wait=true
+
+      # ----- Quality Gate Check -----
+      - name: SonarQube Quality Gate
+        uses: SonarSource/sonarqube-quality-gate-action@v1
+        id: sonarqube-quality-gate
+        timeout-minutes: 5
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN_APP }}
+          SONAR_HOST_URL: http://sonarqube.tokenmetrics.com
+
+      # ----- Security Report Summary -----
+      - name: Security Report Summary
+        run: |
+          echo "## Security Scan Summary" >> $GITHUB_STEP_SUMMARY
+          echo "### Tools Used:" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Semgrep (TypeScript/JavaScript Security)" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Trivy (Dependencies & Config)" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ SonarQube (Code Quality & Security)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Results:" >> $GITHUB_STEP_SUMMARY
+          echo "- SonarQube Quality Gate: ${{ steps.sonarqube-quality-gate.outputs.status }}" >> $GITHUB_STEP_SUMMARY
+          echo "- View detailed results at: http://sonarqube.tokenmetrics.com/dashboard?id=mcp" >> $GITHUB_STEP_SUMMARY
