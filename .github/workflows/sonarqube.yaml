@@ -10,7 +10,7 @@ on:
 jobs:
   security-scan:
     name: Security Analysis
-    runs-on: ubuntu-latest-l
+    runs-on: ubuntu-latest
     
     steps:
       - uses: actions/checkout@v4
