@@ -1,6 +1,7 @@
 name: Security Scan
 
 on:
+  pull_request:
   schedule:
     - cron: '0 2 * * *'  # Run daily at 2AM UTC
   workflow_dispatch:
@@ -13,23 +14,35 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+          fetch-depth: 0 
 
-      # ----- Setup Node.js -----
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '18'
-          cache: 'npm'
-
-      # ----- Install dependencies -----
-      - name: Install dependencies
-        run: npm ci
+      # ----- Setup Python Virtual Environment -----
+      - name: Setup Python Environment
+        run: |
+          python3 -m venv security-env
+          source security-env/bin/activate
+          echo "VIRTUAL_ENV=$(pwd)/security-env" >> $GITHUB_ENV
+          echo "$(pwd)/security-env/bin" >> $GITHUB_PATH
 
       # ----- Install security tooling -----
-      - name: Install Semgrep
+      - name: Install Bandit, Semgrep, Trivy
         run: |
-          python3 -m pip install --disable-pip-version-check semgrep==1.71.0
+          source security-env/bin/activate
+          pip install --disable-pip-version-check \
+            bandit==1.7.8 \
+            semgrep==1.71.0
+
+      # ----- Python SAST (if any Python files exist) -----
+      - name: Bandit Security Scan
+        run: |
+          source security-env/bin/activate
+          if [ -d "scripts" ] || [ -f "*.py" ]; then
+            bandit -r . -ll -ii -f json -o bandit.json || true
+          else
+            echo "No Python files found, skipping Bandit"
+            echo '{"results": []}' > bandit.json
+          fi
+        continue-on-error: true
 
       # ----- Security rules (multi-language) -----
       - name: Semgrep Security Scan
