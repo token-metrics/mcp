@@ -57,7 +57,7 @@ const getServer = (apiKey?: string) => {
       const toolClass = Object.getPrototypeOf(tool).constructor;
       const toolInstance = new toolClass(apiKey);
 
-      return await toolInstance.execute(args || {});
+      return await toolInstance.execute(args ?? {});
     },
   );
 
@@ -65,8 +65,8 @@ const getServer = (apiKey?: string) => {
 };
 
 export class TokenMetricsHTTPServer {
-  private app: express.Application;
-  private port: number;
+  readonly app: express.Application;
+  readonly port: number;
   private transports: {
     [sessionId: string]: StreamableHTTPServerTransport | SSEServerTransport;
   } = {};
@@ -86,11 +86,6 @@ export class TokenMetricsHTTPServer {
           if (!origin) {
             return callback(null, true);
           }
-
-          // const allowedOrigins = [];
-          // if (allowedOrigins.includes(origin)) {
-          //   return callback(null, true);
-          // }
 
           console.log("CORS: Checking origin:", origin);
           return callback(null, true);
@@ -132,133 +127,18 @@ export class TokenMetricsHTTPServer {
     this.app.get("/", this.handleMCPGetRequest.bind(this));
 
     this.app.all("/sse", async (req: Request, res: Response) => {
-      // Handle CORS preflight requests
       if (req.method === "OPTIONS") {
-        res.setHeader("Access-Control-Allow-Origin", req.get("Origin") || "*");
-        res.setHeader("Access-Control-Allow-Credentials", "true");
-        res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
-        res.setHeader(
-          "Access-Control-Allow-Headers",
-          "Content-Type, x-api-key, Authorization, mcp-session-id",
-        );
-        res.setHeader("Access-Control-Max-Age", "86400"); // 24 hours
-        res.status(200).end();
+        this.handleSSEOptionsRequest(req, res);
         return;
       }
 
-      if (!["GET", "POST"].includes(req.method)) {
-        res.status(405).send("Method Not Allowed");
-        return;
-      }
-
-      // Add request validation like other endpoints
-      if (!this.isValidRequest(req)) {
-        console.log("SSE request blocked - potential DNS rebinding attack", {
-          host: req.get("Host"),
-          origin: req.get("Origin"),
-          userAgent: req.get("User-Agent"),
-        });
-        res.status(403).json({
-          error: "Invalid request - potential DNS rebinding attack",
-          code: -32600,
-        });
-        return;
-      }
-
-      console.log(
-        `Received ${req.method} request to /sse (deprecated SSE transport)`,
-        {
-          host: req.get("Host"),
-          origin: req.get("Origin"),
-          userAgent: req.get("User-Agent"),
-        },
-      );
+      const validationResult = this.validateSSERequest(req, res);
+      if (!validationResult) return;
 
       try {
-        console.log("Setting up SSE transport...");
-
-        // Set some CORS headers early, but let the transport handle the SSE headers
-        res.setHeader("Access-Control-Allow-Origin", req.get("Origin") || "*");
-        res.setHeader("Access-Control-Allow-Credentials", "true");
-        res.setHeader(
-          "Access-Control-Allow-Headers",
-          "Content-Type, x-api-key, Authorization",
-        );
-        res.setHeader("X-Accel-Buffering", "no"); // Disable nginx buffering
-
-        console.log("Creating SSE transport...");
-        const transport = new SSEServerTransport("/messages", res);
-        console.log(
-          `SSE transport created with session ID: ${transport.sessionId}`,
-        );
-
-        this.transports[transport.sessionId] = transport;
-
-        console.log("Getting API key and creating server...");
-        const apiKey = req.get("x-api-key") || (req.query.apiKey as string);
-        const server = getServer(apiKey);
-
-        console.log("Connecting server to transport...");
-        await server.connect(transport);
-        console.log("SSE connection established successfully");
-
-        // Set up keep-alive ping after connection is established
-        const pingInterval = setInterval(() => {
-          if (!res.destroyed) {
-            try {
-              res.write(": ping\n\n"); // SSE comment (ping)
-            } catch (error) {
-              console.error("Error sending ping:", error);
-              clearInterval(pingInterval);
-            }
-          } else {
-            clearInterval(pingInterval);
-          }
-        }, 30000); // Ping every 30 seconds
-
-        // Set up event listeners after connection is established
-        res.on("close", () => {
-          console.log(
-            `SSE connection closed for session: ${transport.sessionId}`,
-          );
-          clearInterval(pingInterval);
-          delete this.transports[transport.sessionId];
-        });
-
-        res.on("error", (error) => {
-          console.error(
-            `SSE connection error for session: ${transport.sessionId}`,
-            error,
-          );
-          clearInterval(pingInterval);
-          delete this.transports[transport.sessionId];
-        });
+        await this.setupSSEConnection(req, res);
       } catch (error) {
-        console.error("Error setting up SSE transport:", error);
-        console.error(
-          "Error stack:",
-          error instanceof Error ? error.stack : "No stack trace",
-        );
-
-        if (!res.headersSent) {
-          res.status(500).json({
-            error: "Failed to establish SSE connection",
-            message: error instanceof Error ? error.message : String(error),
-          });
-        } else {
-          // If headers already sent, try to send error through SSE
-          try {
-            res.write("event: error\n");
-            res.write(
-              `data: {"error": "${
-                error instanceof Error ? error.message : String(error)
-              }"}\n\n`,
-            );
-            res.end();
-          } catch (writeError) {
-            console.error("Failed to write error to SSE stream:", writeError);
-          }
-        }
+        this.handleSSEConnectionError(error, res);
       }
     });
 
@@ -269,7 +149,6 @@ export class TokenMetricsHTTPServer {
         headers: req.headers,
       });
 
-      // Add request validation
       if (!this.isValidRequest(req)) {
         console.log(
           "/messages request blocked - potential DNS rebinding attack",
@@ -355,7 +234,7 @@ export class TokenMetricsHTTPServer {
               code: -32603,
               message: "Internal server error",
             },
-            id: req.body?.id || null,
+            id: req.body?.id ?? null,
           });
         }
       }
@@ -402,7 +281,7 @@ export class TokenMetricsHTTPServer {
           }
         };
 
-        const apiKey = req.get("x-api-key") || (req.query.apiKey as string);
+        const apiKey = req.get("x-api-key") ?? (req.query.apiKey as string);
         const server = getServer(apiKey);
         await server.connect(transport);
         await transport.handleRequest(req, res, req.body);
@@ -420,7 +299,7 @@ export class TokenMetricsHTTPServer {
       }
 
       if (req.body.method === "tools/call") {
-        const apiKey = req.get("x-api-key") || req.query.apiKey;
+        const apiKey = req.get("x-api-key") ?? req.query.apiKey;
         if (!apiKey) {
           res.status(400).json({
             jsonrpc: "2.0",
@@ -479,6 +358,143 @@ export class TokenMetricsHTTPServer {
         res.status(500).json({
           error: "Internal server error",
         });
+      }
+    }
+  }
+
+  private handleSSEOptionsRequest(req: Request, res: Response): void {
+    res.setHeader("Access-Control-Allow-Origin", req.get("Origin") ?? "*");
+    res.setHeader("Access-Control-Allow-Credentials", "true");
+    res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+    res.setHeader(
+      "Access-Control-Allow-Headers",
+      "Content-Type, x-api-key, Authorization, mcp-session-id",
+    );
+    res.setHeader("Access-Control-Max-Age", "86400"); // 24 hours
+    res.status(200).end();
+  }
+
+  private validateSSERequest(req: Request, res: Response): boolean {
+    if (!["GET", "POST"].includes(req.method)) {
+      res.status(405).send("Method Not Allowed");
+      return false;
+    }
+
+    if (!this.isValidRequest(req)) {
+      console.log("SSE request blocked - potential DNS rebinding attack", {
+        host: req.get("Host"),
+        origin: req.get("Origin"),
+        userAgent: req.get("User-Agent"),
+      });
+      res.status(403).json({
+        error: "Invalid request - potential DNS rebinding attack",
+        code: -32600,
+      });
+      return false;
+    }
+
+    console.log(
+      `Received ${req.method} request to /sse (deprecated SSE transport)`,
+      {
+        host: req.get("Host"),
+        origin: req.get("Origin"),
+        userAgent: req.get("User-Agent"),
+      },
+    );
+
+    return true;
+  }
+
+  private setSSEHeaders(req: Request, res: Response): void {
+    res.setHeader("Access-Control-Allow-Origin", req.get("Origin") ?? "*");
+    res.setHeader("Access-Control-Allow-Credentials", "true");
+    res.setHeader(
+      "Access-Control-Allow-Headers",
+      "Content-Type, x-api-key, Authorization",
+    );
+    res.setHeader("X-Accel-Buffering", "no");
+  }
+
+  private async setupSSEConnection(req: Request, res: Response): Promise<void> {
+    console.log("Setting up SSE transport...");
+
+    this.setSSEHeaders(req, res);
+
+    console.log("Creating SSE transport...");
+    const transport = new SSEServerTransport("/messages", res);
+    console.log(
+      `SSE transport created with session ID: ${transport.sessionId}`,
+    );
+
+    this.transports[transport.sessionId] = transport;
+
+    console.log("Getting API key and creating server...");
+    const apiKey = req.get("x-api-key") ?? (req.query.apiKey as string);
+    const server = getServer(apiKey);
+
+    console.log("Connecting server to transport...");
+    await server.connect(transport);
+    console.log("SSE connection established successfully");
+
+    this.setupSSEEventHandlers(transport, res);
+  }
+
+  private setupSSEEventHandlers(
+    transport: SSEServerTransport,
+    res: Response,
+  ): void {
+    const pingInterval = setInterval(() => {
+      if (!res.destroyed) {
+        try {
+          res.write(": ping\n\n");
+        } catch (error) {
+          console.error("Error sending ping:", error);
+          clearInterval(pingInterval);
+        }
+      } else {
+        clearInterval(pingInterval);
+      }
+    }, 30000);
+
+    res.on("close", () => {
+      console.log(`SSE connection closed for session: ${transport.sessionId}`);
+      clearInterval(pingInterval);
+      delete this.transports[transport.sessionId];
+    });
+
+    res.on("error", (error) => {
+      console.error(
+        `SSE connection error for session: ${transport.sessionId}`,
+        error,
+      );
+      clearInterval(pingInterval);
+      delete this.transports[transport.sessionId];
+    });
+  }
+
+  private handleSSEConnectionError(error: unknown, res: Response): void {
+    console.error("Error setting up SSE transport:", error);
+    console.error(
+      "Error stack:",
+      error instanceof Error ? error.stack : "No stack trace",
+    );
+
+    if (!res.headersSent) {
+      res.status(500).json({
+        error: "Failed to establish SSE connection",
+        message: error instanceof Error ? error.message : String(error),
+      });
+    } else {
+      try {
+        res.write("event: error\n");
+        res.write(
+          `data: {"error": "${
+            error instanceof Error ? error.message : String(error)
+          }"}\n\n`,
+        );
+        res.end();
+      } catch (writeError) {
+        console.error("Failed to write error to SSE stream:", writeError);
       }
     }
   }
@@ -543,9 +559,7 @@ export class TokenMetricsHTTPServer {
     const isLocalOrigin = this.isLocalhostOrigin(origin);
 
     // If host is localhost but origin is not, potential DNS rebinding
-    return (
-      isLocalHost && !isLocalOrigin && !this.isAllowedExternalOrigin(origin)
-    );
+    return isLocalHost && !isLocalOrigin;
   }
 
   private isLocalHost(host: string): boolean {
@@ -602,12 +616,6 @@ export class TokenMetricsHTTPServer {
     } catch {
       return false;
     }
-  }
-
-  private isAllowedExternalOrigin(origin: string): boolean {
-    const allowedExternalOrigins: string[] = [];
-
-    return allowedExternalOrigins.includes(origin);
   }
 
   public async start(): Promise<void> {

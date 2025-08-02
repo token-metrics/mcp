@@ -13,12 +13,12 @@ export abstract class BaseApiTool implements BaseTool {
   protected readonly apiKey: string;
 
   constructor(apiKey?: string) {
-    this.apiKey = apiKey || process.env.TOKEN_METRICS_API_KEY || "";
+    this.apiKey = apiKey ?? process.env.TOKEN_METRICS_API_KEY ?? "";
   }
 
   abstract getToolDefinition(): any;
 
-  async execute(args: any): Promise<ToolResponse | any> {
+  async execute(args: any): Promise<ToolResponse> {
     try {
       const result = await this.performApiRequest(args);
       return {
