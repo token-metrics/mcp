@@ -8,7 +8,7 @@ import {
 import { AVAILABLE_TOOLS } from "./tools/index.js";
 
 export class TokenMetricsMCPServer {
-  private server: Server;
+  readonly server: Server;
 
   constructor() {
     this.server = new Server(

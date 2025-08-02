@@ -177,9 +177,7 @@ export class SearchTool extends BaseApiTool {
     let inQuotes = false;
     let quoteChar = "";
 
-    for (let i = 0; i < query.length; i++) {
-      const char = query[i];
-
+    for (const char of query) {
       if (!inQuotes && (char === '"' || char === "'")) {
         inQuotes = true;
         quoteChar = char;

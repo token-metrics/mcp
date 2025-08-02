@@ -51,15 +51,6 @@ async function main(): Promise<void> {
     process.exit(0);
   }
 
-  // if (!process.env.TOKEN_METRICS_API_KEY) {
-  //   console.error("Error: Token Metrics API key is required.");
-  //   console.error(
-  //     "Provide it via TOKEN_METRICS_API_KEY environment variable.",
-  //   );
-  //   console.error("Run with --help for more information.");
-  //   process.exit(1);
-  // }
-
   const server = new TokenMetricsMCPServer();
   await server.start();
 }
