@@ -23,7 +23,7 @@ const getServer = (apiKey?: string) => {
   const server = new Server(
     {
       name: "Token Metrics MCP Server",
-      version: "1.3.1",
+      version: "1.4.0",
     },
     {
       capabilities: {
@@ -122,7 +122,7 @@ export class TokenMetricsHTTPServer {
       return res.status(200).json({
         status: "healthy",
         timestamp: new Date().toISOString(),
-        version: "1.3.1",
+        version: "1.4.0",
         service: "Token Metrics MCP Server",
       });
     });

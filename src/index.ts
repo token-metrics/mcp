@@ -14,7 +14,7 @@ export class TokenMetricsMCPServer {
     this.server = new Server(
       {
         name: "Token Metrics MCP Server",
-        version: "1.3.1",
+        version: "1.4.0",
       },
       {
         capabilities: {
