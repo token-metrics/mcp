@@ -1,7 +1,6 @@
 import { BaseTool } from "./types.js";
 import { TokenDataTool } from "./token-data.js";
 import { PriceTool } from "./price.js";
-import { TokenTraderGradeTool } from "./trader-grade.js";
 import { HourlyOHLCVTool } from "./hourly-ohlcv.js";
 import { DailyOHLCVTool } from "./daily-ohlcv.js";
 import { TokenInvestorGradeTool } from "./investor-grade.js";
@@ -21,12 +20,15 @@ import { IndicesPerformanceTool } from "./indices-performance.js";
 import { SearchTool } from "./search.js";
 import { FetchTool } from "./fetch.js";
 import { TokenHourlyTradingSignalTool } from "./hourly-trading-signals.js";
+import { MoonshotTokensTool } from "./moonshot-tokens.js";
+import { TokenTmGradeTool } from "./tm-grade.js";
+import { TokenTmGradeHistoricalTool } from "./tm-grade-historical.js";
+import { TokenTechnologyGradeTool } from "./technology-grade.js";
 
 // Registry of all available tools
 export const AVAILABLE_TOOLS: BaseTool[] = [
   new TokenDataTool(),
   new PriceTool(),
-  new TokenTraderGradeTool(),
   new HourlyOHLCVTool(),
   new DailyOHLCVTool(),
   new TokenInvestorGradeTool(),
@@ -44,6 +46,10 @@ export const AVAILABLE_TOOLS: BaseTool[] = [
   new IndicesHoldingsTool(),
   new IndicesPerformanceTool(),
   new TokenHourlyTradingSignalTool(),
+  new MoonshotTokensTool(),
+  new TokenTmGradeTool(),
+  new TokenTmGradeHistoricalTool(),
+  new TokenTechnologyGradeTool(),
 ];
 export const OPENAI_TOOLS = [new SearchTool(), new FetchTool()];
 
@@ -53,7 +59,6 @@ export {
   FetchTool,
   TokenDataTool,
   PriceTool,
-  TokenTraderGradeTool,
   HourlyOHLCVTool,
   DailyOHLCVTool,
   TokenInvestorGradeTool,
@@ -71,5 +76,9 @@ export {
   IndicesHoldingsTool,
   IndicesPerformanceTool,
   TokenHourlyTradingSignalTool,
+  MoonshotTokensTool,
+  TokenTmGradeTool,
+  TokenTmGradeHistoricalTool,
+  TokenTechnologyGradeTool,
 };
 export { BaseTool, ToolResponse } from "./types.js";
