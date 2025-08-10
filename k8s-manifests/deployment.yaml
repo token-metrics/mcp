@@ -22,7 +22,7 @@ spec:
         fsGroup: 1001
       containers:
       - name: tm-mcp-server
-        image: tmmcpregistry-hjata4hfarb4fqfa.azurecr.io/tm-mcp-server:2025-07-28-7c441b0
+        image: tmmcpregistry-hjata4hfarb4fqfa.azurecr.io/tm-mcp-server:2025-08-06-e03d8cb
         imagePullPolicy: Always
         command: ["npm"]
         args: ["run", "start:http:openai"]
