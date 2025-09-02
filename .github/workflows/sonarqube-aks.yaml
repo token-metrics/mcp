@@ -166,7 +166,7 @@ jobs:
 
   security-summary:
     name: Security Summary
-    runs-on: ubuntu-latest-l-s
+    runs-on: ubuntu-latest
     needs: [security-tools, sonarqube-analysis]
     if: always()
 
