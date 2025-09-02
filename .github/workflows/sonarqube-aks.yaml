@@ -11,7 +11,7 @@ jobs:
     name: Security Analysis
     runs-on: ubuntu-latest
     outputs:
-        cache: ${{ steps.cache-key.outputs.key }}
+        cache-key: ${{ steps.cache-key.outputs.key }}
 
     steps:
       - uses: actions/checkout@v4
