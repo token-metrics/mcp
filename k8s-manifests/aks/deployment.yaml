@@ -1,0 +1,84 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tm-mcp-server
+  namespace: tm-mcp-server
+  labels:
+    app: tm-mcp-server
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1    
+  selector:
+    matchLabels:
+      app: tm-mcp-server
+  template:
+    metadata:
+      labels:
+        app: tm-mcp-server
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1001
+        runAsGroup: 1001
+        fsGroup: 1001
+        
+      nodeSelector:
+        agentpool: tmmainapps
+      tolerations:
+        - key: "dedicated"
+          operator: "Equal"
+          value: "main-tm-apps"
+          effect: "NoSchedule"
+
+      containers:
+      - name: tm-mcp-server
+        image: tmmcpregistry-hjata4hfarb4fqfa.azurecr.io/tm-mcp-server:2025-09-02-08d709a
+        imagePullPolicy: IfNotPresent
+        command: ["npm"]
+        args: ["run", "start:http:openai"]
+        ports:
+        - containerPort: 3000
+          name: http
+        workingDir: /app
+        env:
+        - name: NODE_ENV
+          value: "production"
+        - name: PORT
+          value: "3000"
+              
+        # For SigNoz Telemetry data collection
+        - name: HOST_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.hostIP
+
+        - name: K8S_POD_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
+
+        - name: K8S_POD_UID
+          valueFrom:
+              fieldRef:
+                fieldPath: metadata.uid
+
+        - name: OTEL_EXPORTER_OTLP_INSECURE
+          value: "true"
+
+        - name: OTEL_EXPORTER_OTLP_ENDPOINT
+          value: "$(HOST_IP):4317"
+
+        - name: OTEL_RESOURCE_ATTRIBUTES
+          value: service.name=TM-MCP-SERVER-prod,k8s.pod.ip=$(K8S_POD_IP),k8s.pod.uid=$(K8S_POD_UID),deployment.environment=AKS-TM-prod
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "1Gi"
+            cpu: "1000m"
+      restartPolicy: Always 
