@@ -71,8 +71,9 @@ jobs:
 
           # Update the tag in the existing deployment.yaml file
           sed -i "s|image: .*|image: tmmcpregistry-hjata4hfarb4fqfa.azurecr.io/tm-mcp-server:${TAG}|" ./k8s-manifests/deployment.yaml
+          sed -i "s|image: .*|image: tmmcpregistry-hjata4hfarb4fqfa.azurecr.io/tm-mcp-server:${TAG}|" ./k8s-manifests/aks/deployment.yaml
 
-          git add ./k8s-manifests/deployment.yaml
+          git add ./k8s-manifests/deployment.yaml ./k8s-manifests/aks/deployment.yaml
           git commit -m "Update image tag to ${TAG} [skip ci]"
 
           # Try to push, break if successful
