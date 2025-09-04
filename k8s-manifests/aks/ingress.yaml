@@ -1,0 +1,29 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: tm-mcp-server
+  namespace: tm-mcp-server
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod-dns01
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/rate-limit: "100"
+    nginx.ingress.kubernetes.io/rate-limit-window: "1m"
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - openai.mcp.tokenmetrics.com
+    secretName: tm-mcp-server-tls
+  rules:
+  - host: openai.mcp.tokenmetrics.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: tm-mcp-server
+            port:
+              number: 3000
