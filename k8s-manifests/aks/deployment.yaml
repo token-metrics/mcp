@@ -36,7 +36,7 @@ spec:
 
       containers:
       - name: tm-mcp-server
-        image: tmmcpregistry-hjata4hfarb4fqfa.azurecr.io/tm-mcp-server:2025-09-02-08d709a
+        image: tmmcpregistry-hjata4hfarb4fqfa.azurecr.io/tm-mcp-server:2025-09-04-397f185
         imagePullPolicy: IfNotPresent
         command: ["npm"]
         args: ["run", "start:http:openai"]
