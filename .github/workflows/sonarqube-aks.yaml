@@ -115,9 +115,6 @@ jobs:
     strategy:
         matrix:
             instance:
-                - name: "DO"
-                  token: "SONAR_TOKEN_APP"
-                  url: "http://sonarqube.tokenmetrics.com"
                 - name: "AKS"
                   token: "SONAR_AKS_TOKEN"
                   url: "http://sonarqube-aks.tokenmetrics.com"
@@ -183,7 +180,6 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### Results:" >> $GITHUB_STEP_SUMMARY
           echo "- SonarQube Quality Gate: ${{ steps.sonarqube-quality-gate.outputs.status }}" >> $GITHUB_STEP_SUMMARY
-          echo "- View detailed results on DO at: http://sonarqube.tokenmetrics.com/dashboard?id=mcp" >> $GITHUB_STEP_SUMMARY
           echo "- View detailed results on AKS at: http://sonarqube-aks.tokenmetrics.com/dashboard?id=mcp" >> $GITHUB_STEP_SUMMARY
 
       # ----- Cleanup Virtual Environment -----
