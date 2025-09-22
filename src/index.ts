@@ -11,7 +11,7 @@ import { AVAILABLE_TOOLS } from "./tools/index.js";
 export class TokenMetricsMCPServer {
   readonly server: Server;
 
-  constructor() {
+  constructor(apiKey?: string) {
     this.server = new Server(
       {
         name: "Token Metrics MCP Server",
@@ -24,10 +24,10 @@ export class TokenMetricsMCPServer {
       },
     );
 
-    this.setupToolHandlers();
+    this.setupToolHandlers(apiKey);
   }
 
-  private setupToolHandlers(): void {
+  private setupToolHandlers(apiKey?: string): void {
     this.server.setRequestHandler(ListToolsRequestSchema, async () => {
       return {
         tools: AVAILABLE_TOOLS.map((tool) => tool.getToolDefinition()),
@@ -47,7 +47,10 @@ export class TokenMetricsMCPServer {
           throw new Error(`Unknown tool: ${name}`);
         }
 
-        return await tool.execute(args);
+        const toolClass = Object.getPrototypeOf(tool).constructor;
+        const toolInstance = new toolClass(apiKey);
+
+        return await toolInstance.execute(args ?? {});
       },
     );
   }
@@ -65,11 +68,7 @@ export default function createServer({
 }: {
   config: z.infer<typeof configSchema>;
 }) {
-  if (config.apiKey) {
-    process.env.TOKEN_METRICS_API_KEY = config.apiKey;
-  }
-
-  const server = new TokenMetricsMCPServer();
+  const server = new TokenMetricsMCPServer(config.apiKey);
   return server.server;
 }
 
