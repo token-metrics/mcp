@@ -1,5 +1,6 @@
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import { z } from "zod";
 import {
   CallToolRequestSchema,
   ListToolsRequestSchema,
@@ -58,3 +59,20 @@ export class TokenMetricsMCPServer {
     console.error("Token Metrics MCP Server running on stdio");
   }
 }
+
+export default function createServer({
+  config,
+}: {
+  config: z.infer<typeof configSchema>;
+}) {
+  if (config.apiKey) {
+    process.env.TOKEN_METRICS_API_KEY = config.apiKey;
+  }
+
+  const server = new TokenMetricsMCPServer();
+  return server.server;
+}
+
+export const configSchema = z.object({
+  apiKey: z.string().describe("Your Token Metrics API Key"),
+});
